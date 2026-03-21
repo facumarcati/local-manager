@@ -1,0 +1,60 @@
+<h1>Pagos</h1>
+
+<table border="1" cellpadding="5">
+  <thead>
+    <tr>
+      <th>Local</th>
+      <th>Inquilino</th>
+      <th>Período</th>
+      <th>Monto</th>
+      <th>Vencimiento</th>
+      <th>Estado</th>
+      <th>Fecha de pago</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#if payments.length}}
+      {{#each payments}}
+        <tr>
+          <td>{{this.local.name}}</td>
+          <td>{{this.contract.tenantName}}</td>
+          <td>{{monthName this.periodMonth}} {{this.periodYear}}</td>
+          <td>${{this.amount}}</td>
+          <td>{{formatDate this.dueDate}}</td>
+          <td>{{this.status}}</td>
+          <td>
+            {{#if this.paidDate}}
+              {{formatDate this.paidDate}}
+            {{else}}
+              -
+            {{/if}}
+          </td>
+          <td>
+            {{#if (eq this.status "paid")}}
+              <form
+                action="/payments/unpay/{{this._id}}"
+                method="POST"
+                style="display:inline;"
+              >
+                <button type="submit">Deshacer</button>
+              </form>
+            {{else}}
+              <form
+                action="/payments/pay/{{this._id}}"
+                method="POST"
+                style="display:inline;"
+              >
+                <button type="submit">Marcar pagado</button>
+              </form>
+            {{/if}}
+          </td>
+        </tr>
+      {{/each}}
+    {{else}}
+      <tr>
+        <td colspan="8">No hay pagos cargados</td>
+      </tr>
+    {{/if}}
+  </tbody>
+</table>

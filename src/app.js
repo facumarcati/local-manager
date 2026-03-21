@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 
 import localsRouter from "./routes/locals.route.js";
 import contractsRouter from "./routes/contracts.route.js";
-// import paymentsRouter from "./routes/payments.route.js";
+import paymentsRouter from "./routes/payments.route.js";
 // import taxesRouter from "./routes/taxes.route.js";
 
 dotenv.config();
@@ -35,6 +35,23 @@ app.engine(
         const day = String(d.getUTCDate()).padStart(2, "0");
         return `${year}-${month}-${day}`;
       },
+      monthName: (month) => {
+        const months = [
+          "Enero",
+          "Febrero",
+          "Marzo",
+          "Abril",
+          "Mayo",
+          "Junio",
+          "Julio",
+          "Agosto",
+          "Septiembre",
+          "Octubre",
+          "Noviembre",
+          "Diciembre",
+        ];
+        return months[month - 1];
+      },
     },
   }),
 );
@@ -43,7 +60,7 @@ app.set("views", "./src/views");
 
 app.use("/locals", localsRouter);
 app.use("/contracts", contractsRouter);
-// app.use("/payments", paymentsRouter);
+app.use("/payments", paymentsRouter);
 // app.use("/taxes", taxesRouter);
 
 app.get("/", (req, res) => {
