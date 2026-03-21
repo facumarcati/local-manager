@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 import localsRouter from "./routes/locals.route.js";
 import contractsRouter from "./routes/contracts.route.js";
 import paymentsRouter from "./routes/payments.route.js";
-// import taxesRouter from "./routes/taxes.route.js";
+import taxesRouter from "./routes/taxes.route.js";
 
 dotenv.config();
 
@@ -25,7 +25,7 @@ app.engine(
   "handlebars",
   engine({
     helpers: {
-      eq: (a, b) => a === b,
+      eq: (a, b) => a?.toString() === b?.toString(),
 
       formatDate: (date) => {
         if (!date) return "";
@@ -61,7 +61,7 @@ app.set("views", "./src/views");
 app.use("/locals", localsRouter);
 app.use("/contracts", contractsRouter);
 app.use("/payments", paymentsRouter);
-// app.use("/taxes", taxesRouter);
+app.use("/taxes", taxesRouter);
 
 app.get("/", (req, res) => {
   res.render("dashboard");

@@ -1,0 +1,52 @@
+<h1>Nuevo impuesto</h1>
+
+<form action="/taxes" method="POST">
+  <div>
+    <label>Local</label>
+    <select name="local" required>
+      {{#each locals}}
+        <option value="{{this._id}}">{{this.name}} — {{this.address}}</option>
+      {{/each}}
+    </select>
+  </div>
+
+  <div>
+    <label>Tipo</label>
+    <select name="type" required>
+      <option value="ABL">ABL</option>
+      <option value="Ingresos Brutos">Ingresos Brutos</option>
+      <option value="Municipal">Municipal</option>
+      <option value="Luz">Luz</option>
+      <option value="Gas">Gas</option>
+      <option value="Agua">Agua</option>
+      <option value="Otro">Otro</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Monto</label>
+    <input type="number" name="amount" required />
+  </div>
+
+  <div>
+    <label>Período</label>
+    <input
+      type="text"
+      name="period"
+      placeholder="ej: 2do bimestre 2026"
+      required
+    />
+  </div>
+
+  <div>
+    <label>Fecha de vencimiento</label>
+    <input type="date" name="dueDate" required />
+  </div>
+
+  <div>
+    <label>Notas</label>
+    <input type="text" name="notes" placeholder="Opcional" />
+  </div>
+
+  <button type="submit">Guardar</button>
+</form>

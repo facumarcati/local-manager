@@ -1,0 +1,73 @@
+<h1>Impuestos</h1>
+
+<a href="/taxes/new">Cargar impuesto</a>
+
+<hr />
+
+<table border="1" cellpadding="5">
+  <thead>
+    <tr>
+      <th>Local</th>
+      <th>Tipo</th>
+      <th>Período</th>
+      <th>Monto</th>
+      <th>Vencimiento</th>
+      <th>Estado</th>
+      <th>Fecha de pago</th>
+      <th>Notas</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#if taxes.length}}
+      {{#each taxes}}
+        <tr>
+          <td>{{this.local.name}}</td>
+          <td>{{this.type}}</td>
+          <td>{{this.period}}</td>
+          <td>${{this.amount}}</td>
+          <td>{{formatDate this.dueDate}}</td>
+          <td>{{this.status}}</td>
+          <td>
+            {{#if this.paidDate}}
+              {{formatDate this.paidDate}}
+            {{else}}
+              -
+            {{/if}}
+          </td>
+          <td>{{this.notes}}</td>
+          <td>
+            {{#if (eq this.status "paid")}}
+              <form
+                action="/taxes/unpay/{{this._id}}"
+                method="POST"
+                style="display:inline;"
+              >
+                <button type="submit">Deshacer</button>
+              </form>
+            {{else}}
+              <form
+                action="/taxes/pay/{{this._id}}"
+                method="POST"
+                style="display:inline;"
+              >
+                <button type="submit">Marcar pagado</button>
+              </form>
+            {{/if}}
+            <form
+              action="/taxes/delete/{{this._id}}"
+              method="POST"
+              style="display:inline;"
+            >
+              <button type="submit">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+      {{/each}}
+    {{else}}
+      <tr>
+        <td colspan="9">No hay impuestos cargados</td>
+      </tr>
+    {{/if}}
+  </tbody>
+</table>
