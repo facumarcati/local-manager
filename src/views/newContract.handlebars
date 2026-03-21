@@ -1,0 +1,40 @@
+<h1>Nuevo contrato</h1>
+
+<form action="/contracts" method="POST">
+  <div>
+    <label>Local</label>
+    <select name="local" required>
+      {{#each locals}}
+        <option value="{{this._id}}">
+          {{this.name}}
+          -
+          {{this.address}}
+        </option>
+      {{/each}}
+    </select>
+  </div>
+
+  <div>
+    <label>Inquilino</label>
+    <input type="text" name="tenantName" required />
+  </div>
+
+  <div>
+    <label>Monto alquiler</label>
+    <input type="number" name="rentAmount" required />
+  </div>
+
+  <div>
+    <label>Fecha inicio</label>
+    <input type="date" name="startDate" required />
+  </div>
+
+  <div>
+    <label>Fecha fin</label>
+    <input type="date" name="endDate" required />
+  </div>
+
+  <button type="submit">
+    Guardar contrato
+  </button>
+</form>

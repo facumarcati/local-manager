@@ -1,0 +1,38 @@
+import mongoose from "mongoose";
+
+const contractSchema = new mongoose.Schema({
+  local: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Local",
+    required: true,
+  },
+  tenantName: {
+    type: String,
+    required: true,
+  },
+  rentAmount: {
+    type: Number,
+    required: true,
+  },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: true,
+  },
+  status: {
+    type: String,
+    enum: ["active", "finished"],
+    default: "active",
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const Contract = mongoose.model("Contract", contractSchema);
+
+export default Contract;

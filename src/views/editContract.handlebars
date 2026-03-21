@@ -1,0 +1,57 @@
+<h1>Editar contrato</h1>
+
+<form action="/contracts/edit/{{contract._id}}" method="POST">
+  <div>
+    <label>Local</label>
+
+    <select name="local">
+      {{#each locals}}
+        <option value="{{this._id}}" 
+        {{#if (eq this._id ../contract.local._id)}}
+        selected
+        {{/if}}>
+          {{this.name}}
+        </option>
+      {{/each}}
+    </select>
+  </div>
+
+  <div>
+    <label>Inquilino</label>
+    <input
+      type="text"
+      name="tenantName"
+      value="{{contract.tenantName}}"
+      required
+    />
+  </div>
+
+  <div>
+    <label>Monto</label>
+    <input
+      type="number"
+      name="rentAmount"
+      value="{{contract.rentAmount}}"
+      required
+    />
+  </div>
+
+  <div>
+    <label>Inicio</label>
+    <input
+      type="date"
+      name="startDate"
+      value="{{formatDate contract.startDate}}"
+      required
+    />
+  </div>
+
+  <div>
+    <label>Fin</label>
+    <input type="date" name="endDate" value="{{formatDate contract.endDate}}" required />
+  </div>
+
+  <button>
+    Guardar cambios
+  </button>
+</form>

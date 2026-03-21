@@ -6,7 +6,7 @@ import connectMongoDB from "./config/db.js";
 import dotenv from "dotenv";
 
 import localsRouter from "./routes/locals.route.js";
-// import contractsRouter from "./routes/contracts.route.js";
+import contractsRouter from "./routes/contracts.route.js";
 // import paymentsRouter from "./routes/payments.route.js";
 // import taxesRouter from "./routes/taxes.route.js";
 
@@ -26,6 +26,15 @@ app.engine(
   engine({
     helpers: {
       eq: (a, b) => a === b,
+
+      formatDate: (date) => {
+        if (!date) return "";
+        const d = new Date(date);
+        const year = d.getUTCFullYear();
+        const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+        const day = String(d.getUTCDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      },
     },
   }),
 );
@@ -33,7 +42,7 @@ app.set("view engine", "handlebars");
 app.set("views", "./src/views");
 
 app.use("/locals", localsRouter);
-// app.use("/contracts", contractsRouter);
+app.use("/contracts", contractsRouter);
 // app.use("/payments", paymentsRouter);
 // app.use("/taxes", taxesRouter);
 

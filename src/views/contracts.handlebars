@@ -1,0 +1,56 @@
+<h1>Contratos</h1>
+
+<a href="/contracts/new">
+  Crear contrato
+</a>
+
+<hr />
+
+<table border="1" cellpadding="5">
+  <thead>
+    <tr>
+      <th>Local</th>
+      <th>Inquilino</th>
+      <th>Monto</th>
+      <th>Inicio</th>
+      <th>Fin</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {{#if contracts.length}}
+      {{#each contracts}}
+        <tr>
+          <td>{{this.local.name}}</td>
+          <td>{{this.tenantName}}</td>
+          <td>${{this.rentAmount}}</td>
+          <td>{{formatDate this.startDate}}</td>
+          <td>{{formatDate this.endDate}}</td>
+          <td>{{this.status}}</td>
+          <td>
+            <a href="/contracts/edit/{{this._id}}">
+              editar
+            </a>
+            <form
+              action="/contracts/finish/{{this._id}}"
+              method="POST"
+              style="display:inline;"
+            >
+              <button>
+                Finalizar
+              </button>
+            </form>
+          </td>
+        </tr>
+      {{/each}}
+    {{else}}
+      <tr>
+        <td colspan="7">
+          No hay contratos cargados
+        </td>
+      </tr>
+    {{/if}}
+  </tbody>
+</table>
