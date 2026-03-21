@@ -1,0 +1,32 @@
+<h1>Editar local</h1>
+
+<form action="/locals/edit/{{local._id}}" method="POST">
+
+  <div>
+    <label>Nombre</label>
+    <input type="text" name="name" value="{{local.name}}" required />
+  </div>
+
+  <div>
+    <label>Dirección</label>
+    <input type="text" name="address" value="{{local.address}}" required />
+  </div>
+
+  <div>
+    <label>Estado</label>
+    <select name="status">
+      <option value="available"
+      {{#if (eq local.status "available")}} selected {{/if}}>
+        Disponible
+      </option>
+      <option value="rented"
+      {{#if (eq local.status "rented")}} selected {{/if}}>
+        Alquilado
+      </option>
+    </select>
+  </div>
+
+  <button type="submit">
+    Guardar cambios
+  </button>
+</form>

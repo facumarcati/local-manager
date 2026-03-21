@@ -1,0 +1,47 @@
+<h1>Locales</h1>
+
+<a href="/locals/new">Crear local</a>
+
+<hr />
+
+<table border="1" cellpadding="5">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Dirección</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#if locals.length}}
+      {{#each locals}}
+        <tr>
+          <td>{{this.name}}</td>
+          <td>{{this.address}}</td>
+          <td>{{this.status}}</td>
+          <td>
+            <a href="/locals/edit/{{this._id}}">
+              editar
+            </a>
+            <form
+              action="/locals/delete/{{this._id}}"
+              method="POST"
+              style="display:inline;"
+            >
+              <button type="submit">
+                eliminar
+              </button>
+            </form>
+          </td>
+        </tr>
+      {{/each}}
+    {{else}}
+      <tr>
+        <td colspan="4">
+          No hay locales cargados
+        </td>
+      </tr>
+    {{/if}}
+  </tbody>
+</table>
