@@ -9,6 +9,7 @@ import localsRouter from "./routes/locals.route.js";
 import contractsRouter from "./routes/contracts.route.js";
 import paymentsRouter from "./routes/payments.route.js";
 import taxesRouter from "./routes/taxes.route.js";
+import dashboardRouter from "./routes/dashboard.route.js";
 
 dotenv.config();
 
@@ -26,7 +27,7 @@ app.engine(
   engine({
     helpers: {
       eq: (a, b) => a?.toString() === b?.toString(),
-
+      gt: (a, b) => a > b,
       formatDate: (date) => {
         if (!date) return "";
         const d = new Date(date);
@@ -62,10 +63,7 @@ app.use("/locals", localsRouter);
 app.use("/contracts", contractsRouter);
 app.use("/payments", paymentsRouter);
 app.use("/taxes", taxesRouter);
-
-app.get("/", (req, res) => {
-  res.render("dashboard");
-});
+app.use("/", dashboardRouter);
 
 app.listen(PORT, () => {
   console.log("Servidor iniciado en http://localhost:" + PORT);

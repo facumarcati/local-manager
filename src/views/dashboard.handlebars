@@ -1,3 +1,177 @@
 <h1>Dashboard</h1>
 
-<p>Sistema de administracion de alquileres</p>
+<hr />
+
+<h2>Deuda total</h2>
+
+{{#if (gt globalDebt 0)}}
+  <p><strong>Total vencido sin cobrar: ${{globalDebt}}</strong></p>
+{{else}}
+  <p>No hay deuda pendiente ✓</p>
+{{/if}}
+
+<hr />
+
+<h2>Vencimientos próximos (30 días)</h2>
+
+{{#if upcomingContracts.length}}
+  <h3>Contratos</h3>
+  <ul>
+    {{#each upcomingContracts}}
+      <li>
+        Contrato
+        <strong>{{this.local.name}}</strong>
+        ({{this.tenantName}}) → vence el
+        {{formatDate this.endDate}}
+      </li>
+    {{/each}}
+  </ul>
+{{/if}}
+
+{{#if upcomingPayments.length}}
+  <h3>Pagos</h3>
+  <ul>
+    {{#each upcomingPayments}}
+      <li>
+        Pago
+        <strong>{{this.local.name}}</strong>
+        —
+        {{monthName this.periodMonth}}
+        {{this.periodYear}}
+        → ${{this.amount}}
+        {{#if (eq this.status "late")}}⚠️ vencido{{/if}}
+      </li>
+    {{/each}}
+  </ul>
+{{/if}}
+
+{{#if upcomingTaxes.length}}
+  <h3>Impuestos</h3>
+  <ul>
+    {{#each upcomingTaxes}}
+      <li>
+        {{this.type}}
+        <strong>{{this.local.name}}</strong>
+        —
+        {{this.period}}
+        → vence el
+        {{formatDate this.dueDate}}
+        {{#if (eq this.status "late")}}⚠️ vencido{{/if}}
+      </li>
+    {{/each}}
+  </ul>
+{{/if}}
+
+{{#unless upcomingContracts.length}}
+  {{#unless upcomingPayments.length}}
+    {{#unless upcomingTaxes.length}}
+      <p>No hay vencimientos próximos ✓</p>
+    {{/unless}}
+  {{/unless}}
+{{/unless}}
+
+<hr />
+
+<h2>Locales</h2>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>Total</th>
+    <th>Alquilados</th>
+    <th>Disponibles</th>
+  </tr>
+  <tr>
+    <td>{{totalLocals}}</td>
+    <td>{{rentedLocals}}</td>
+    <td>{{availableLocals}}</td>
+  </tr>
+</table>
+
+<h2>Contratos</h2>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>Activos</th>
+    <th>Vencen en 30 días</th>
+  </tr>
+  <tr>
+    <td>{{totalActiveContracts}}</td>
+    <td>{{expiringContracts}}</td>
+  </tr>
+</table>
+
+<h2>Pagos</h2>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>Vencidos</th>
+    <th>Pendientes este mes</th>
+    <th>Cobrado este mes</th>
+  </tr>
+  <tr>
+    <td>{{latePayments}}</td>
+    <td>{{pendingThisMonth}}</td>
+    <td>${{collectedThisMonth}}</td>
+  </tr>
+</table>
+
+<h2>Impuestos</h2>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>Vencidos</th>
+    <th>Vencen este mes</th>
+  </tr>
+  <tr>
+    <td>{{lateTaxes}}</td>
+    <td>{{taxesDueThisMonth}}</td>
+  </tr>
+</table>
+
+<h2>Estado por local</h2>
+
+<table border="1" cellpadding="5">
+  <thead>
+    <tr>
+      <th>Local</th>
+      <th>Estado</th>
+      <th>Inquilino</th>
+      <th>Fin de contrato</th>
+      <th>Pagos pendientes</th>
+      <th>Total pendiente</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each localsDetail}}
+      <tr>
+        <td>{{this.name}}</td>
+
+        {{#if this.occupied}}
+          <td>Alquilado</td>
+          <td>{{this.tenantName}}</td>
+          <td>{{formatDate this.contractEnd}}</td>
+
+          {{#if (gt this.totalOwed 0)}}
+            <td>
+              {{#each this.overduePayments}}
+                <div>
+                  {{monthName this.periodMonth}}
+                  {{this.periodYear}}
+                  — ${{this.amount}}
+                  ({{this.status}})
+                </div>
+              {{/each}}
+            </td>
+            <td><strong>${{this.totalOwed}}</strong></td>
+          {{else}}
+            <td>Al día ✓</td>
+            <td>$0</td>
+          {{/if}}
+
+        {{else}}
+          <td>Disponible</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+        {{/if}}
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
