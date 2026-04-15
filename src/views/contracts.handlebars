@@ -1,4 +1,16 @@
-<h1>Contratos</h1>
+<h1>
+  {{#if (eq view "active")}}Contratos activos{{/if}}
+  {{#if (eq view "history")}}Historial de contratos{{/if}}
+</h1>
+
+<div style="margin-bottom: 15px;">
+  <a href="/contracts" style="{{#if (eq view 'active')}}font-weight:bold;{{/if}}">
+    Activos
+  </a> |
+  <a href="/contracts/history" style="{{#if (eq view 'history')}}font-weight:bold;{{/if}}">
+    Historial
+  </a>
+</div>
 
 <a href="/contracts/new">
   Crear contrato
@@ -28,20 +40,29 @@
           <td>${{this.rentAmount}}</td>
           <td>{{formatDate this.startDate}}</td>
           <td>{{formatDate this.endDate}}</td>
-          <td>{{this.status}}</td>
+          <td>
+            {{#if (eq this.status "active")}}
+              <span class="badge badge--green">Activo</span>
+            {{else}}
+              <span class="badge badge--gray">Finalizado</span>
+            {{/if}}
+          </td>
           <td>
             <a href="/contracts/edit/{{this._id}}">
               editar
             </a>
-            <form
-              action="/contracts/finish/{{this._id}}"
-              method="POST"
-              style="display:inline;"
-            >
-              <button>
-                Finalizar
-              </button>
-            </form>
+
+            {{#if (eq ../view "active")}}
+              <form
+                action="/contracts/finish/{{this._id}}"
+                method="POST"
+                style="display:inline;"
+              >
+                <button>
+                  Finalizar
+                </button>
+              </form>
+            {{/if}}
           </td>
         </tr>
       {{/each}}

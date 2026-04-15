@@ -7,9 +7,25 @@ import Payment from "../models/payment.model.js";
 const router = Router();
 
 router.get("/", async (req, res) => {
-  const contracts = await Contract.find().populate("local").lean();
+  const contracts = await Contract.find({ status: "active" })
+    .populate("local")
+    .lean();
 
-  res.render("contracts", { contracts });
+  res.render("contracts", {
+    contracts,
+    view: "active",
+  });
+});
+
+router.get("/history", async (req, res) => {
+  const contracts = await Contract.find({ status: "finished" })
+    .populate("local")
+    .lean();
+
+  res.render("contracts", {
+    contracts,
+    view: "history",
+  });
 });
 
 router.get("/new", async (req, res) => {

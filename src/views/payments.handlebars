@@ -1,4 +1,20 @@
-<h1>Pagos</h1>
+<h1>
+  {{#if (eq view "active")}}Pagos a cobrar{{/if}}
+  {{#if (eq view "upcoming")}}Pagos futuros{{/if}}
+  {{#if (eq view "history")}}Historial de pagos{{/if}}
+</h1>
+
+<div style="margin-bottom: 15px;">
+  <a href="/payments" style="{{#if (eq view 'active')}}font-weight:bold;{{/if}}">
+    Activos
+  </a> |
+  <a href="/payments/upcoming" style="{{#if (eq view 'upcoming')}}font-weight:bold;{{/if}}">
+    Próximos
+  </a> |
+  <a href="/payments/history" style="{{#if (eq view 'history')}}font-weight:bold;{{/if}}">
+    Historial
+  </a>
+</div>
 
 <table border="1" cellpadding="5">
   <thead>
@@ -33,7 +49,7 @@
           <td>
             {{#if (eq this.status "paid")}}
               <form
-                action="/payments/unpay/{{this._id}}"
+                action="/payments/unpay/{{this._id}}?view={{../view}}"
                 method="POST"
                 style="display:inline;"
               >
@@ -41,7 +57,7 @@
               </form>
             {{else}}
               <form
-                action="/payments/pay/{{this._id}}"
+                action="/payments/pay/{{this._id}}?view={{../view}}"
                 method="POST"
                 style="display:inline;"
               >

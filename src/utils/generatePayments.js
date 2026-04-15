@@ -4,27 +4,40 @@ export function generatePayments(contract) {
   const start = new Date(contract.startDate);
   const end = new Date(contract.endDate);
 
-  let current = new Date(
-    Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1),
-  );
+  let current = new Date(start);
 
-  const endLimit = new Date(
-    Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), 1),
-  );
+  current.setMonth(current.getMonth() + 1);
 
-  while (current <= endLimit) {
+  while (current <= end) {
+    const dueDate = getAdjustedDate(start, current);
+
     payments.push({
       contract: contract._id,
       local: contract.local,
       amount: contract.rentAmount,
-      periodMonth: current.getUTCMonth() + 1,
-      periodYear: current.getUTCFullYear(),
-      dueDate: new Date(current),
+      periodMonth: dueDate.getMonth() + 1,
+      periodYear: dueDate.getFullYear(),
+      dueDate,
       status: "pending",
     });
 
-    current.setUTCMonth(current.getUTCMonth() + 1);
+    current.setMonth(current.getMonth() + 1);
   }
 
   return payments;
+}
+
+function getAdjustedDate(baseDate, targetDate) {
+  const day = baseDate.getDate();
+
+  const year = targetDate.getFullYear();
+  const month = targetDate.getMonth();
+
+  const date = new Date(year, month, day);
+
+  if (date.getDate() !== day) {
+    return new Date(year, month + 1, 0);
+  }
+
+  return date;
 }
