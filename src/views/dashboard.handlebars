@@ -189,7 +189,10 @@
                 <span class="upcoming-name">{{this.local.name}}</span>
                 <span class="upcoming-detail">{{monthName this.periodMonth}} {{this.periodYear}}</span>
               </div>
-              <span class="upcoming-amount">${{this.amount}}</span>
+              <div class="upcoming-right">
+                <span class="upcoming-amount">${{this.amount}}</span>
+                <span class="upcoming-due">{{formatDate this.dueDate}}</span>
+              </div>
             </div>
           {{/each}}
         </div>

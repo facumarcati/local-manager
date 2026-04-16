@@ -12,11 +12,9 @@
   </a>
 </div>
 
-<a href="/contracts/new">
+<a href="/contracts/new" class="btn btn--primary" style="margin-bottom: 40px;">
   Crear contrato
 </a>
-
-<hr />
 
 <table border="1" cellpadding="5">
   <thead>
@@ -47,18 +45,23 @@
               <span class="badge badge--gray">Finalizado</span>
             {{/if}}
           </td>
-          <td>
-            <a href="/contracts/edit/{{this._id}}">
-              editar
+          <td class="actions-cell">
+            <a
+              href="/contracts/edit/{{this._id}}"
+              class="btn btn--sm btn--edit"
+            >
+              Editar
             </a>
 
             {{#if (eq ../view "active")}}
               <form
                 action="/contracts/finish/{{this._id}}"
                 method="POST"
-                style="display:inline;"
               >
-                <button>
+                <button
+                  type="submit"
+                  class="btn btn--sm btn--danger"
+                >
                   Finalizar
                 </button>
               </form>

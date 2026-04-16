@@ -35,19 +35,6 @@ router.get("/", async (req, res) => {
       { status: "late" },
     );
 
-    const latePaymentsRaw = await Payment.find({
-      status: "late",
-    })
-      .populate({
-        path: "contract",
-        match: { status: "active" },
-      })
-      .lean();
-
-    const latePayments = latePaymentsRaw.filter(
-      (p) => p.contract !== null,
-    ).length;
-
     const pendingThisMonth = await Payment.countDocuments({
       status: "pending",
       dueDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
@@ -133,19 +120,6 @@ router.get("/", async (req, res) => {
       }),
     );
 
-    const globalDebtPayments = await Payment.find({
-      status: "late",
-    })
-      .populate({
-        path: "contract",
-        match: { status: "active" },
-      })
-      .lean();
-
-    const globalDebt = globalDebtPayments
-      .filter((p) => p.contract !== null)
-      .reduce((acc, p) => acc + p.amount, 0);
-
     const upcomingPaymentsRaw = await Payment.find({
       status: { $in: ["pending", "late"] },
       dueDate: { $gte: today, $lte: in30Days },
@@ -178,13 +152,8 @@ router.get("/", async (req, res) => {
       .sort({ dueDate: 1 })
       .lean();
 
-    const latePaymentsListRaw = await Payment.find({
-      status: "late",
-    })
-      .populate({
-        path: "contract",
-        match: { status: "active" },
-      })
+    const latePaymentsListRaw = await Payment.find({ status: "late" })
+      .populate({ path: "contract", match: { status: "active" } })
       .populate("local")
       .sort({ dueDate: 1 })
       .lean();
@@ -192,6 +161,10 @@ router.get("/", async (req, res) => {
     const latePaymentsList = latePaymentsListRaw.filter(
       (p) => p.contract !== null,
     );
+
+    const latePayments = latePaymentsList.length;
+
+    const globalDebt = latePaymentsList.reduce((acc, p) => acc + p.amount, 0);
 
     const paidThisMonthList = await Payment.find({
       status: "paid",

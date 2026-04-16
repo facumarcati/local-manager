@@ -150,7 +150,6 @@ body {
 
 .page-wrapper {
   padding: 32px 36px;
-  max-width: 1200px;
 }
 
 /* =============================================
@@ -160,7 +159,7 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .page-title {
@@ -277,7 +276,6 @@ body {
   font-size: 26px;
   font-weight: 700;
   color: var(--text-primary);
-  font-family: var(--font-mono);
   letter-spacing: -1px;
   line-height: 1.1;
 }
@@ -294,7 +292,7 @@ body {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  padding: 4px 8px;
   border-radius: 100px;
   font-size: 11px;
   font-weight: 600;
@@ -453,13 +451,24 @@ body {
 .upcoming-amount {
   font-size: 12px;
   font-weight: 600;
-  font-family: var(--font-mono);
   color: var(--text-secondary);
   white-space: nowrap;
 }
 
 .upcoming-amount {
   color: var(--accent-green);
+}
+
+.upcoming-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.upcoming-due {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 /* =============================================
@@ -520,9 +529,14 @@ body {
 }
 
 .amount-owed {
-  font-family: var(--font-mono);
   font-weight: 600;
   color: var(--accent-red);
+  font-size: 13px;
+}
+
+.amount-pending {
+  font-weight: 600;
+  color: var(--accent-orange);
   font-size: 13px;
 }
 
@@ -572,8 +586,8 @@ form div {
   margin-bottom: 16px;
 }
 
-form button[type="submit"],
-form button {
+form button[type="submit"]:not(.btn),
+form button:not(.btn) {
   padding: 9px 20px;
   background: var(--accent-teal);
   color: #ffffff;
@@ -586,7 +600,7 @@ form button {
   transition: opacity 0.15s;
 }
 
-form button:hover {
+form button:not(.btn):hover {
   opacity: 0.88;
 }
 
@@ -660,6 +674,69 @@ hr {
   border: none;
   border-top: 1px solid var(--border);
   margin: 20px 0;
+}
+
+/* =============================================
+   LOCALS
+   ============================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.btn--primary {
+  background: var(--accent-teal);
+  color: #ffffff;
+  padding: 20px 18px;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn--primary:hover {
+  background: #0f766e;
+  text-decoration: none;
+}
+
+.btn--edit {
+  background: #eab308;
+  color: #1f2937;
+}
+
+.btn--edit:hover {
+  background: #ca8a04;
+  text-decoration: none;
+}
+
+.btn--danger {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.btn--danger:hover {
+  background: #b91c1c;
+}
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+}
+
+.actions-cell form {
+  display: flex;
+  margin: 0;
 }
 
 /* =============================================

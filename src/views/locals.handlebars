@@ -1,8 +1,13 @@
-<h1>Locales</h1>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Locales</h1>
+    <p class="page-subtitle">Administrá tus propiedades</p>
+  </div>
+</div>
 
-<a href="/locals/new">Crear local</a>
-
-<hr />
+<a href="/locals/new" class="btn btn--primary" style="margin-bottom: 40px;">
+  Nuevo local
+</a>
 
 <table border="1" cellpadding="5">
   <thead>
@@ -17,28 +22,38 @@
     {{#if locals.length}}
       {{#each locals}}
         <tr>
-          <td>{{this.name}}</td>
+          <td><strong>{{this.name}}</strong></td>
           <td>{{this.address}}</td>
-          <td>{{this.status}}</td>
           <td>
-            <a href="/locals/edit/{{this._id}}">
-              editar
-            </a>
+            {{#if (eq this.status "available")}}
+              <span class="badge badge--green">Disponible</span>
+            {{else if (eq this.status "rented")}}
+              <span class="badge badge--blue">Alquilado</span>
+            {{else}}
+              <span class="badge badge--gray">{{this.status}}</span>
+            {{/if}}
+          </td>
+          <td class="actions-cell">
+            <a
+              href="/locals/edit/{{this._id}}"
+              class="btn btn--sm btn--edit"
+            >Editar</a>
             <form
               action="/locals/delete/{{this._id}}"
               method="POST"
               style="display:inline;"
             >
-              <button type="submit">
-                eliminar
-              </button>
+              <button
+                type="submit"
+                class="btn btn--sm btn--danger"
+              >Eliminar</button>
             </form>
           </td>
         </tr>
       {{/each}}
     {{else}}
       <tr>
-        <td colspan="4">
+        <td colspan="4" style="text-align:center; color: var(--text-muted);">
           No hay locales cargados
         </td>
       </tr>
