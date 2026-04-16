@@ -3,19 +3,8 @@
 <form action="/contracts/edit/{{contract._id}}" method="POST">
   <div>
     <label>Local</label>
-
-    <select name="local">
-      {{#each locals}}
-        <option value="{{this._id}}" 
-        {{#if (eq this._id ../contract.local._id)}}
-        selected
-        {{/if}}>
-          {{this.name}}
-        </option>
-      {{/each}}
-    </select>
+    <input type="text" value="{{contract.local.name}}" disabled />
   </div>
-
   <div>
     <label>Inquilino</label>
     <input
@@ -25,32 +14,36 @@
       required
     />
   </div>
-
   <div>
     <label>Monto</label>
     <input
       type="number"
-      name="rentAmount"
-      value="{{contract.rentAmount}}"
-      required
+      name="baseRent"
+      value="{{contract.baseRent}}"
+      disabled
     />
   </div>
-
+  <div>
+    <label>Día de pago</label>
+    <input type="number" value="{{contract.paymentDay}}" disabled />
+  </div>
   <div>
     <label>Inicio</label>
     <input
       type="date"
-      name="startDate"
-      value="{{formatDate contract.startDate}}"
+      value="{{formatDateInput contract.startDate}}"
+      disabled
+    />
+  </div>
+  <div>
+    <label>Fin</label>
+    <input
+      type="date"
+      name="endDate"
+      value="{{formatDateInput contract.endDate}}"
       required
     />
   </div>
-
-  <div>
-    <label>Fin</label>
-    <input type="date" name="endDate" value="{{formatDate contract.endDate}}" required />
-  </div>
-
   <button>
     Guardar cambios
   </button>

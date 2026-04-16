@@ -1,20 +1,21 @@
-<h1>
-  {{#if (eq view "active")}}Contratos activos{{/if}}
-  {{#if (eq view "history")}}Historial de contratos{{/if}}
-</h1>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">
+      {{#if (eq view "active")}}Contratos activos{{else}}Historial de contratos{{/if}}
+    </h1>
+    <p class="page-subtitle">Gestión de contratos de alquiler</p>
+  </div>
+  <a href="/contracts/new" class="btn btn--primary">+ Nuevo contrato</a>
+</div>
 
-<div style="margin-bottom: 15px;">
-  <a href="/contracts" style="{{#if (eq view 'active')}}font-weight:bold;{{/if}}">
+<div class="tab-nav">
+  <a href="/contracts" class="tab-item {{#if (eq view 'active')}}tab-item--active{{/if}}">
     Activos
-  </a> |
-  <a href="/contracts/history" style="{{#if (eq view 'history')}}font-weight:bold;{{/if}}">
+  </a>
+  <a href="/contracts/history" class="tab-item {{#if (eq view 'history')}}tab-item--active{{/if}}">
     Historial
   </a>
 </div>
-
-<a href="/contracts/new" class="btn btn--primary" style="margin-bottom: 40px;">
-  Crear contrato
-</a>
 
 <table border="1" cellpadding="5">
   <thead>
@@ -22,6 +23,7 @@
       <th>Local</th>
       <th>Inquilino</th>
       <th>Monto</th>
+      <th>Día de pago</th>
       <th>Inicio</th>
       <th>Fin</th>
       <th>Estado</th>
@@ -35,7 +37,8 @@
         <tr>
           <td>{{this.local.name}}</td>
           <td>{{this.tenantName}}</td>
-          <td>${{this.rentAmount}}</td>
+          <td>${{this.baseRent}}</td>
+          <td>{{this.paymentDay}}</td>
           <td>{{formatDate this.startDate}}</td>
           <td>{{formatDate this.endDate}}</td>
           <td>
@@ -46,32 +49,46 @@
             {{/if}}
           </td>
           <td class="actions-cell">
-            <a
-              href="/contracts/edit/{{this._id}}"
-              class="btn btn--sm btn--edit"
-            >
+            <a href="/contracts/edit/{{this._id}}" class="btn btn--sm btn--edit">
               Editar
             </a>
-
-            {{#if (eq ../view "active")}}
-              <form
-                action="/contracts/finish/{{this._id}}"
-                method="POST"
-              >
-                <button
-                  type="submit"
-                  class="btn btn--sm btn--danger"
-                >
-                  Finalizar
-                </button>
-              </form>
-            {{/if}}
+            <a href="/contracts/adjust/{{this._id}}" class="btn btn--sm btn--adjust">
+              Ajustar monto
+            </a>
+            <form 
+              id="adjust-{{this._id}}" 
+              action="/contracts/adjust-contract/{{this._id}}" 
+              method="POST"
+              style="display:none; margin-top:5px;"
+            >
+              <input 
+                type="number" 
+                name="newAmount" 
+                placeholder="Nuevo monto" 
+                required 
+              />
+              <input 
+                type="date" 
+                name="fromDate" 
+                required 
+              />
+              <button type="submit">Aplicar</button>
+            </form>
+            <form
+              action="/contracts/regenerate/{{this._id}}"
+              method="POST"
+              style="display:inline;"
+            >
+              <button class="btn btn--sm btn--danger">
+                Regenerar pagos
+              </button>
+            </form>
           </td>
         </tr>
       {{/each}}
     {{else}}
       <tr>
-        <td colspan="7">
+        <td colspan="8">
           No hay contratos cargados
         </td>
       </tr>

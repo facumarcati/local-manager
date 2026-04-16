@@ -1,5 +1,6 @@
 import { Router } from "express";
 import Payment from "../models/payment.model.js";
+import PaymentTransaction from "../models/paymentTransaction.model.js";
 
 const router = Router();
 
@@ -7,17 +8,17 @@ router.get("/", async (req, res) => {
   try {
     const today = new Date();
 
-    const in30Days = new Date(today);
-    in30Days.setDate(in30Days.getDate() + 30);
+    const firstDayOfMonth = new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1),
+    );
 
-    await Payment.updateMany(
-      { status: "pending", dueDate: { $lt: today } },
-      { status: "late" },
+    const lastDayOfMonth = new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0),
     );
 
     const payments = await Payment.find({
-      status: { $in: ["late", "pending"] },
-      dueDate: { $lte: in30Days },
+      status: { $ne: "paid" },
+      dueDate: { $lte: lastDayOfMonth },
     })
       .populate({
         path: "contract",
@@ -43,12 +44,13 @@ router.get("/upcoming", async (req, res) => {
   try {
     const today = new Date();
 
-    const in30Days = new Date(today);
-    in30Days.setDate(in30Days.getDate() + 30);
+    const lastDayOfMonth = new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0),
+    );
 
     const payments = await Payment.find({
-      dueDate: { $gt: in30Days },
-      status: "pending",
+      status: { $ne: "paid" },
+      dueDate: { $gt: lastDayOfMonth },
     })
       .populate({
         path: "contract",
@@ -72,17 +74,18 @@ router.get("/upcoming", async (req, res) => {
 
 router.get("/history", async (req, res) => {
   try {
-    const payments = await Payment.find({
-      status: "paid",
-    })
-      .populate("contract")
-      .populate("local")
-      .sort({ paidDate: -1 })
+    const transactions = await PaymentTransaction.find()
+      .populate({
+        path: "payment",
+        populate: [{ path: "contract" }, { path: "local" }],
+      })
+      .sort({ date: -1 })
       .lean();
 
     res.render("payments", {
-      payments,
+      payments: transactions,
       view: "history",
+      isHistory: true,
     });
   } catch (error) {
     console.log(error);
@@ -92,9 +95,35 @@ router.get("/history", async (req, res) => {
 
 router.post("/pay/:id", async (req, res) => {
   try {
-    await Payment.findByIdAndUpdate(req.params.id, {
-      status: "paid",
-      paidDate: new Date(),
+    const { amount } = req.body;
+
+    const payment = await Payment.findById(req.params.id);
+
+    if (!payment) {
+      return res.send("Pago no encontrado");
+    }
+
+    const payAmount = Number(amount);
+
+    if (!payAmount || payAmount <= 0) {
+      return res.send("Monto inválido");
+    }
+
+    payment.paidAmount += payAmount;
+
+    if (payment.paidAmount >= payment.amount) {
+      payment.status = "paid";
+      payment.paidDate = new Date();
+    } else {
+      payment.status = "partial";
+    }
+
+    await payment.save();
+
+    await PaymentTransaction.create({
+      payment: payment._id,
+      amount: payAmount,
+      date: new Date(),
     });
 
     const view = req.query.view || "active";
@@ -103,22 +132,6 @@ router.post("/pay/:id", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.send("Error registrando pago");
-  }
-});
-
-router.post("/unpay/:id", async (req, res) => {
-  try {
-    await Payment.findByIdAndUpdate(req.params.id, {
-      status: "pending",
-      paidDate: null,
-    });
-
-    const view = req.query.view || "active";
-
-    res.redirect(`/payments/${view === "active" ? "" : view}`);
-  } catch (error) {
-    console.log(error);
-    res.send("Error deshaciendo pago");
   }
 });
 

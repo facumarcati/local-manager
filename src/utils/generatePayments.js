@@ -6,20 +6,30 @@ export function generatePayments(contract) {
 
   let current = new Date(start);
 
-  current.setMonth(current.getMonth() + 1);
+  current.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
 
-  while (current <= end) {
-    const dueDate = getAdjustedDate(start, current);
+  while (true) {
+    const year = current.getFullYear();
+    const month = current.getMonth();
 
-    payments.push({
-      contract: contract._id,
-      local: contract.local,
-      amount: contract.rentAmount,
-      periodMonth: dueDate.getMonth() + 1,
-      periodYear: dueDate.getFullYear(),
-      dueDate,
-      status: "pending",
-    });
+    const dueDate = getDueDate(year, month, contract.paymentDay);
+
+    if (dueDate > end) break;
+
+    if (dueDate >= start) {
+      const period = `${year}-${String(month + 1).padStart(2, "0")}`;
+
+      payments.push({
+        contract: contract._id,
+        local: contract.local,
+        amount: contract.baseRent,
+        paidAmount: 0,
+        period,
+        dueDate,
+        status: "pending",
+      });
+    }
 
     current.setMonth(current.getMonth() + 1);
   }
@@ -27,17 +37,10 @@ export function generatePayments(contract) {
   return payments;
 }
 
-function getAdjustedDate(baseDate, targetDate) {
-  const day = baseDate.getDate();
+function getDueDate(year, month, paymentDay) {
+  const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
 
-  const year = targetDate.getFullYear();
-  const month = targetDate.getMonth();
+  const day = Math.min(paymentDay, lastDayOfMonth);
 
-  const date = new Date(year, month, day);
-
-  if (date.getDate() !== day) {
-    return new Date(year, month + 1, 0);
-  }
-
-  return date;
+  return new Date(year, month, day);
 }

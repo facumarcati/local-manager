@@ -10,7 +10,7 @@ const contractSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  rentAmount: {
+  baseRent: {
     type: Number,
     required: true,
   },
@@ -22,9 +22,13 @@ const contractSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  paymentDay: {
+    type: Number,
+    required: true,
+  },
   status: {
     type: String,
-    enum: ["active", "finished"],
+    enum: ["active", "finished", "cancelled"],
     default: "active",
   },
   createdAt: {

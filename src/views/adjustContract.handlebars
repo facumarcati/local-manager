@@ -1,0 +1,28 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Ajustar monto</h1>
+    <p class="page-subtitle">
+      {{contract.local.name}}
+      -
+      {{contract.tenantName}}
+    </p>
+  </div>
+</div>
+
+<form action="/contracts/adjust-contract/{{contract._id}}" method="POST">
+  <div>
+    <label>Monto actual</label>
+    <input type="number" value="{{contract.baseRent}}" disabled />
+  </div>
+  <div>
+    <label>Nuevo monto</label>
+    <input type="number" name="newAmount" required />
+  </div>
+  <div>
+    <label>Aplicar desde</label>
+    <input type="date" name="fromDate" required />
+  </div>
+  <button class="btn btn--primary">
+    Aplicar ajuste
+  </button>
+</form>

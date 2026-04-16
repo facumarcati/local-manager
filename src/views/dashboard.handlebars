@@ -67,7 +67,11 @@
       <span class="stat-value">${{collectedThisMonth}}</span>
     </div>
     <div class="stat-sub">
-      <span class="badge badge--gray">{{pendingThisMonth}} pendientes</span>
+      {{#if (gt pendingThisMonth 0)}}
+        <span class="badge badge--gray">
+          {{pendingThisMonth}} {{#if (eq pendingThisMonth 1)}}pendiente{{else}}pendientes{{/if}}
+        </span>
+      {{/if}}
       {{#if (gt latePayments 0)}}
         <span class="badge badge--red">{{latePayments}} vencidos</span>
       {{/if}}
@@ -101,7 +105,7 @@
       <th>Local</th>
       <th>Inquilino</th>
       <th>Período</th>
-      <th>Monto</th>
+      <th>Deuda</th>
       <th>Vencimiento</th>
     </tr>
   </thead>
@@ -111,8 +115,13 @@
         <tr>
           <td>{{this.local.name}}</td>
           <td>{{this.contract.tenantName}}</td>
-          <td>{{monthName this.periodMonth}} {{this.periodYear}}</td>
-          <td class="amount-owed">${{this.amount}}</td>
+          <td>{{this.period}}</td>
+          <td class="amount-owed">
+            ${{subtract this.amount this.paidAmount}}
+            {{#if (gt this.paidAmount 0)}}
+              <small>(pagó ${{this.paidAmount}})</small>
+            {{/if}}
+          </td>
           <td>{{formatDate this.dueDate}}</td>
         </tr>
       {{/each}}
@@ -140,11 +149,13 @@
     {{#if paidThisMonthList.length}}
       {{#each paidThisMonthList}}
         <tr>
-          <td>{{this.local.name}}</td>
-          <td>{{this.contract.tenantName}}</td>
-          <td>{{monthName this.periodMonth}} {{this.periodYear}}</td>
-          <td class="amount-ok">${{this.amount}}</td>
-          <td>{{formatDate this.paidDate}}</td>
+          <td>{{this.payment.local.name}}</td>
+          <td>{{this.payment.contract.tenantName}}</td>
+          <td>{{this.payment.period}}</td>
+          <td class="amount-ok">
+            ${{this.amount}}
+          </td>
+          <td>{{formatDate this.date}}</td>
         </tr>
       {{/each}}
     {{else}}
@@ -190,7 +201,9 @@
                 <span class="upcoming-detail">{{monthName this.periodMonth}} {{this.periodYear}}</span>
               </div>
               <div class="upcoming-right">
-                <span class="upcoming-amount">${{this.amount}}</span>
+                <span class="upcoming-amount">
+                  ${{subtract this.amount this.paidAmount}}
+                </span>
                 <span class="upcoming-due">{{formatDate this.dueDate}}</span>
               </div>
             </div>
@@ -256,6 +269,10 @@
                     <span class="amount-owed">${{this.latestDebt}} (Vencido)</span>
                   {{else if (eq this.latestStatus "pending")}}
                     <span class="amount-pending">${{this.latestDebt}} (Pendiente)</span>
+                  {{else if (eq this.latestStatus "partial")}}
+                    <span class="amount-pending">
+                      ${{this.latestDebt}} (Parcial)
+                    </span>
                   {{else}}
                     <span class="amount-ok">Al día ✓</span>
                   {{/if}}

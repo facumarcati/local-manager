@@ -23,6 +23,10 @@ router.post("/", async (req, res) => {
   try {
     const { name, address } = req.body;
 
+    if (!name || !address) {
+      return res.send("Faltan datos");
+    }
+
     await Local.create({
       name,
       address,

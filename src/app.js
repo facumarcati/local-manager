@@ -28,12 +28,40 @@ app.engine(
     helpers: {
       eq: (a, b) => a?.toString() === b?.toString(),
       gt: (a, b) => a > b,
+      lt: (a, b) => a < b,
+      isLate: (dueDate) => {
+        if (!dueDate) return false;
+
+        const today = new Date();
+        const due = new Date(dueDate);
+
+        return due < today;
+      },
+      subtract: (a, b) => {
+        return (Number(a) || 0) - (Number(b) || 0);
+      },
       formatDate: (date) => {
         if (!date) return "";
+
         const d = new Date(date);
-        const year = d.getUTCFullYear();
-        const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-        const day = String(d.getUTCDate()).padStart(2, "0");
+        d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+
+        return `${day}-${month}-${year}`;
+      },
+      formatDateInput: (date) => {
+        if (!date) return "";
+
+        const d = new Date(date);
+        d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+
         return `${year}-${month}-${day}`;
       },
       monthName: (month) => {

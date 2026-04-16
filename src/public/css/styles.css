@@ -35,7 +35,6 @@
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 10px 30px rgba(0, 0, 0, 0.06);
 
   --font: "Plus Jakarta Sans", sans-serif;
-  --font-mono: "DM Mono", monospace;
 }
 
 *,
@@ -200,7 +199,6 @@ body {
 }
 
 .alert-amount {
-  font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 600;
   margin-left: 10px;
@@ -718,6 +716,16 @@ hr {
   text-decoration: none;
 }
 
+.btn--adjust {
+  background: #8b5cf6;
+  color: #ffffff;
+}
+
+.btn--adjust:hover {
+  background: #7c3aed;
+  text-decoration: none;
+}
+
 .btn--danger {
   background: #dc2626;
   color: #ffffff;
@@ -737,6 +745,50 @@ hr {
 .actions-cell form {
   display: flex;
   margin: 0;
+}
+
+/* Tabs */
+.tab-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab-item {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.15s;
+}
+
+.tab-item:hover {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.tab-item--active {
+  color: var(--accent-teal);
+  border-bottom-color: var(--accent-teal);
+}
+
+/* btn--primary corregido — sin padding raro */
+.btn--primary {
+  background: var(--accent-teal);
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 13.5px;
+}
+
+.btn--primary:hover {
+  opacity: 0.88;
+  color: #ffffff;
+  text-decoration: none;
 }
 
 /* =============================================

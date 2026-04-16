@@ -15,12 +15,12 @@ const paymentSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  periodMonth: {
+  paidAmount: {
     type: Number,
-    required: true,
+    default: 0,
   },
-  periodYear: {
-    type: Number,
+  period: {
+    type: String,
     required: true,
   },
   dueDate: {
@@ -33,7 +33,7 @@ const paymentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["pending", "paid", "late"],
+    enum: ["pending", "partial", "paid"],
     default: "pending",
   },
 });

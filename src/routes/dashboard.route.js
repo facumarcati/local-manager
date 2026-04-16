@@ -3,6 +3,7 @@ import Local from "../models/local.model.js";
 import Contract from "../models/contract.model.js";
 import Payment from "../models/payment.model.js";
 import Tax from "../models/tax.model.js";
+import PaymentTransaction from "../models/paymentTransaction.model.js";
 
 const router = Router();
 
@@ -31,31 +32,27 @@ router.get("/", async (req, res) => {
     });
 
     await Payment.updateMany(
-      { status: "pending", dueDate: { $lt: today } },
+      { status: { $in: ["pending", "partial"] }, dueDate: { $lt: today } },
       { status: "late" },
     );
 
-    const pendingThisMonth = await Payment.countDocuments({
-      status: "pending",
+    const pendingPaymentsThisMonth = await Payment.find({
+      status: { $in: ["pending", "partial"] },
       dueDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
-    });
+    }).lean();
 
-    const paidThisMonthResult = await Payment.aggregate([
-      {
-        $match: {
-          status: "paid",
-          paidDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: "$amount" },
-        },
-      },
-    ]);
+    const pendingThisMonth = pendingPaymentsThisMonth.filter(
+      (p) => p.amount - p.paidAmount > 0,
+    ).length;
 
-    const collectedThisMonth = paidThisMonthResult[0]?.total || 0;
+    const paymentsPaidThisMonth = await PaymentTransaction.find({
+      date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+    }).lean();
+
+    const collectedThisMonth = paymentsPaidThisMonth.reduce(
+      (acc, t) => acc + t.amount,
+      0,
+    );
 
     await Tax.updateMany(
       { status: "pending", dueDate: { $lt: today } },
@@ -89,7 +86,7 @@ router.get("/", async (req, res) => {
 
         let latestPayment = await Payment.findOne({
           contract: contract._id,
-          status: "late",
+          status: { $in: ["pending", "partial"] },
         })
           .sort({ dueDate: 1 })
           .lean();
@@ -103,8 +100,13 @@ router.get("/", async (req, res) => {
             .lean();
         }
 
-        const latestDebt = latestPayment?.amount || 0;
-        const latestStatus = latestPayment?.status || "paid";
+        const latestDebt = latestPayment
+          ? latestPayment.amount - latestPayment.paidAmount
+          : 0;
+        const latestStatus =
+          latestPayment?.status === "partial"
+            ? "partial"
+            : latestPayment?.status || "paid";
         const latestDueDate = latestPayment?.dueDate;
 
         return {
@@ -121,7 +123,7 @@ router.get("/", async (req, res) => {
     );
 
     const upcomingPaymentsRaw = await Payment.find({
-      status: { $in: ["pending", "late"] },
+      status: { $in: ["pending", "late", "partial"] },
       dueDate: { $gte: today, $lte: in30Days },
     })
       .populate({
@@ -152,7 +154,10 @@ router.get("/", async (req, res) => {
       .sort({ dueDate: 1 })
       .lean();
 
-    const latePaymentsListRaw = await Payment.find({ status: "late" })
+    const latePaymentsListRaw = await Payment.find({
+      status: { $in: ["late", "partial"] },
+      dueDate: { $lt: today },
+    })
       .populate({ path: "contract", match: { status: "active" } })
       .populate("local")
       .sort({ dueDate: 1 })
@@ -164,15 +169,19 @@ router.get("/", async (req, res) => {
 
     const latePayments = latePaymentsList.length;
 
-    const globalDebt = latePaymentsList.reduce((acc, p) => acc + p.amount, 0);
+    const globalDebt = latePaymentsList.reduce(
+      (acc, p) => acc + (p.amount - p.paidAmount),
+      0,
+    );
 
-    const paidThisMonthList = await Payment.find({
-      status: "paid",
-      paidDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+    const paidThisMonthList = await PaymentTransaction.find({
+      date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
     })
-      .populate("contract")
-      .populate("local")
-      .sort({ paidDate: -1 })
+      .populate({
+        path: "payment",
+        populate: [{ path: "contract" }, { path: "local" }],
+      })
+      .sort({ date: -1 })
       .lean();
 
     res.render("dashboard", {
