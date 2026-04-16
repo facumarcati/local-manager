@@ -24,7 +24,7 @@
       <span class="alert-icon">⚠</span>
       <div>
         <strong>Deuda vencida sin cobrar</strong>
-        <span class="alert-amount">${{globalDebt}}</span>
+        <span class="alert-amount">${{formatMoney globalDebt}}</span>
       </div>
     </div>
   {{/if}}
@@ -44,7 +44,7 @@
         <span class="stat-label">Deuda vencida</span>
 
         <span class="stat-value {{#if (gt globalDebt 0)}}stat-value--danger{{/if}}">
-          ${{globalDebt}}
+          ${{formatMoney globalDebt}}
         </span>
       </div>
 
@@ -105,7 +105,7 @@
       </div>
       <div class="stat-content">
         <span class="stat-label">Cobrado este mes</span>
-        <span class="stat-value">${{collectedThisMonth}}</span>
+        <span class="stat-value">${{formatMoney collectedThisMonth}}</span>
       </div>
       <div class="stat-sub">
         {{#if (gt pendingThisMonth 0)}}
@@ -155,9 +155,9 @@
             <td>{{this.contract.tenantName}}</td>
             <td>{{this.period}}</td>
             <td class="amount-owed">
-              ${{subtract this.amount this.paidAmount}}
+              ${{formatMoney (subtract this.amount this.paidAmount)}}
               {{#if (gt this.paidAmount 0)}}
-                <small>(pagó ${{this.paidAmount}})</small>
+                <small>(pagó ${{formatMoney this.paidAmount}})</small>
               {{/if}}
             </td>
             <td>{{formatDate this.dueDate}}</td>
@@ -197,7 +197,7 @@
             <td>${{this.amount}}</td>
             <td>${{this.paidAmount}}</td>
             <td>
-              ${{subtract this.amount this.paidAmount}}
+              ${{formatMoney (subtract this.amount this.paidAmount)}}
             </td>
 
             <td>{{formatDate this.dueDate}}</td>
@@ -231,7 +231,7 @@
             <td>{{this.payment.contract.tenantName}}</td>
             <td>{{this.payment.period}}</td>
             <td class="amount-ok">
-              ${{this.amount}}
+              ${{formatMoney this.amount}}
             </td>
             <td>{{formatDate this.date}}</td>
           </tr>
@@ -280,7 +280,7 @@
                 </div>
                 <div class="upcoming-right">
                   <span class="upcoming-amount">
-                    ${{subtract this.amount this.paidAmount}}
+                    ${{formatMoney (subtract this.amount this.paidAmount)}}
                   </span>
                   <span class="upcoming-due">{{formatDate this.dueDate}}</span>
                 </div>
@@ -344,12 +344,12 @@
                   <td>{{formatDate this.contractEnd}}</td>
                   <td>
                     {{#if (eq this.latestStatus "late")}}
-                      <span class="amount-owed">${{this.latestDebt}} (Vencido)</span>
+                      <span class="amount-owed">${{formatMoney this.latestDebt}} (Vencido)</span>
                     {{else if (eq this.latestStatus "pending")}}
-                      <span class="amount-pending">${{this.latestDebt}} (Pendiente)</span>
+                      <span class="amount-pending">${{formatMoney this.latestDebt}} (Pendiente)</span>
                     {{else if (eq this.latestStatus "partial")}}
                       <span class="amount-pending">
-                        ${{this.latestDebt}} (Parcial)
+                        ${{formatMoney this.latestDebt}} (Parcial)
                       </span>
                     {{else}}
                       <span class="amount-ok">Al día ✓</span>

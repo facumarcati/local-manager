@@ -64,6 +64,15 @@ app.engine(
 
         return `${year}-${month}-${day}`;
       },
+      formatMoney: (value) => {
+        if (value == null) return "$0";
+
+        return new Intl.NumberFormat("es-AR", {
+          style: "decimal",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(value);
+      },
       monthName: (month) => {
         const months = [
           "Enero",
