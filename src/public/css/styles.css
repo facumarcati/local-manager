@@ -201,7 +201,7 @@ body {
 .alert-amount {
   font-size: 15px;
   font-weight: 600;
-  margin-left: 10px;
+  margin-left: 4px;
 }
 
 /* =============================================
@@ -209,7 +209,7 @@ body {
    ============================================= */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -254,6 +254,19 @@ body {
 .stat-icon--orange {
   background: var(--accent-orange-bg);
   color: var(--accent-orange);
+}
+
+.stat-icon--red {
+  background: var(--accent-red-bg);
+  color: var(--accent-red);
+}
+
+.stat-value--danger {
+  color: var(--accent-red);
+}
+
+.stat-card--danger:has(.stat-value--danger) {
+  border-color: #fecaca;
 }
 
 .stat-content {
@@ -681,7 +694,8 @@ hr {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 32px;
+  min-height: 32px;
+  height: auto;
   padding: 0 12px;
   border-radius: var(--radius-sm);
   font-family: var(--font);
@@ -789,6 +803,49 @@ hr {
   opacity: 0.88;
   color: #ffffff;
   text-decoration: none;
+}
+
+/* =============================================
+   PERIOD SELECTOR
+   ============================================= */
+.period-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+.period-selector .change-month {
+  display: flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.period-selector .change-month:hover {
+  background: var(--bg);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.period-selector span {
+  padding: 5px 16px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
 }
 
 /* =============================================

@@ -7,174 +7,77 @@ import PaymentTransaction from "../models/paymentTransaction.model.js";
 
 const router = Router();
 
-router.get("/", async (req, res) => {
-  try {
-    const today = new Date();
+async function getDashboardData(year, month) {
+  const today = new Date();
+  const in30Days = new Date(today);
+  in30Days.setDate(in30Days.getDate() + 30);
 
-    const firstDayOfMonth = new Date(
-      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1),
-    );
-    const lastDayOfMonth = new Date(
-      Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0),
-    );
+  const firstDayOfMonth = new Date(Date.UTC(year, month, 1));
+  const lastDayOfMonth = new Date(Date.UTC(year, month + 1, 0));
 
-    const in30Days = new Date(today);
-    in30Days.setDate(in30Days.getDate() + 30);
-
-    const totalLocals = await Local.countDocuments();
-    const activeContracts = await Contract.countDocuments({ status: "active" });
-    const availableLocals = totalLocals - activeContracts;
-
-    const totalActiveContracts = activeContracts;
-    const expiringContracts = await Contract.countDocuments({
-      status: "active",
-      endDate: { $gte: today, $lte: in30Days },
-    });
-
-    await Payment.updateMany(
+  // Fase 1: actualizaciones de estado (deben correr antes de las lecturas)
+  await Promise.all([
+    Payment.updateMany(
       { status: { $in: ["pending", "partial"] }, dueDate: { $lt: today } },
       { status: "late" },
-    );
-
-    const pendingPaymentsThisMonth = await Payment.find({
-      status: { $in: ["pending", "partial"] },
-      dueDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
-    }).lean();
-
-    const pendingThisMonth = pendingPaymentsThisMonth.filter(
-      (p) => p.amount - p.paidAmount > 0,
-    ).length;
-
-    const paymentsPaidThisMonth = await PaymentTransaction.find({
-      date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
-    }).lean();
-
-    const collectedThisMonth = paymentsPaidThisMonth.reduce(
-      (acc, t) => acc + t.amount,
-      0,
-    );
-
-    await Tax.updateMany(
+    ),
+    Tax.updateMany(
       { status: "pending", dueDate: { $lt: today } },
       { status: "late" },
-    );
+    ),
+  ]);
 
-    const lateTaxes = await Tax.countDocuments({ status: "late" });
-
-    const taxesDueThisMonth = await Tax.countDocuments({
-      status: "pending",
-      dueDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
-    });
-
-    const locals = await Local.find().lean();
-
-    const localsDetail = await Promise.all(
-      locals.map(async (local) => {
-        const contract = await Contract.findOne({
-          local: local._id,
-          status: "active",
-        })
-          .populate("local")
-          .lean();
-
-        if (!contract) {
-          return {
-            ...local,
-            occupied: false,
-          };
-        }
-
-        let latestPayment = await Payment.findOne({
-          contract: contract._id,
-          status: { $in: ["pending", "partial"] },
-        })
-          .sort({ dueDate: 1 })
-          .lean();
-
-        if (!latestPayment) {
-          latestPayment = await Payment.findOne({
-            contract: contract._id,
-            status: "pending",
-          })
-            .sort({ dueDate: 1 })
-            .lean();
-        }
-
-        const latestDebt = latestPayment
-          ? latestPayment.amount - latestPayment.paidAmount
-          : 0;
-        const latestStatus =
-          latestPayment?.status === "partial"
-            ? "partial"
-            : latestPayment?.status || "paid";
-        const latestDueDate = latestPayment?.dueDate;
-
-        return {
-          ...local,
-          occupied: true,
-          tenantName: contract.tenantName,
-          contractEnd: contract.endDate,
-          latestPayment,
-          latestDebt,
-          latestStatus,
-          latestDueDate,
-        };
-      }),
-    );
-
-    const upcomingPaymentsRaw = await Payment.find({
-      status: { $in: ["pending", "late", "partial"] },
-      dueDate: { $gte: today, $lte: in30Days },
-    })
-      .populate({
-        path: "contract",
-        match: { status: "active" },
-      })
-      .populate("local")
-      .sort({ dueDate: 1 })
-      .lean();
-
-    const upcomingPayments = upcomingPaymentsRaw.filter(
-      (p) => p.contract !== null,
-    );
-
-    const upcomingContracts = await Contract.find({
+  // Fase 2: todas las lecturas en paralelo
+  const [
+    totalLocals,
+    activeContracts,
+    expiringContracts,
+    pendingPaymentsThisMonth,
+    lateTaxes,
+    taxesDueThisMonth,
+    locals,
+    allActiveContracts,
+    latePaymentsListRaw,
+    pendingPaymentsList,
+    paidThisMonthList,
+    upcomingPaymentsRaw,
+    upcomingContracts,
+    upcomingTaxes,
+  ] = await Promise.all([
+    Local.countDocuments(),
+    Contract.countDocuments({ status: "active" }),
+    Contract.countDocuments({
       status: "active",
       endDate: { $gte: today, $lte: in30Days },
-    })
-      .populate("local")
-      .sort({ endDate: 1 })
-      .lean();
-
-    const upcomingTaxes = await Tax.find({
-      status: { $in: ["pending", "late"] },
-      dueDate: { $gte: today, $lte: in30Days },
-    })
-      .populate("local")
-      .sort({ dueDate: 1 })
-      .lean();
-
-    const latePaymentsListRaw = await Payment.find({
+    }),
+    Payment.find({
+      status: { $in: ["pending", "partial"] },
+      dueDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+    }).lean(),
+    Tax.countDocuments({ status: "late" }),
+    Tax.countDocuments({
+      status: "pending",
+      dueDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+    }),
+    Local.find().lean(),
+    Contract.find({ status: "active" }).lean(), // para localsDetail sin N+1
+    Payment.find({
       status: { $in: ["late", "partial"] },
       dueDate: { $lt: today },
     })
       .populate({ path: "contract", match: { status: "active" } })
       .populate("local")
       .sort({ dueDate: 1 })
-      .lean();
-
-    const latePaymentsList = latePaymentsListRaw.filter(
-      (p) => p.contract !== null,
-    );
-
-    const latePayments = latePaymentsList.length;
-
-    const globalDebt = latePaymentsList.reduce(
-      (acc, p) => acc + (p.amount - p.paidAmount),
-      0,
-    );
-
-    const paidThisMonthList = await PaymentTransaction.find({
+      .lean(),
+    Payment.find({
+      status: { $in: ["pending", "partial"] },
+      dueDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+    })
+      .populate("contract")
+      .populate("local")
+      .sort({ dueDate: 1 })
+      .lean(),
+    PaymentTransaction.find({
       date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
     })
       .populate({
@@ -182,30 +85,152 @@ router.get("/", async (req, res) => {
         populate: [{ path: "contract" }, { path: "local" }],
       })
       .sort({ date: -1 })
-      .lean();
+      .lean(),
+    Payment.find({
+      status: { $in: ["pending", "late", "partial"] },
+      dueDate: { $gte: today, $lte: in30Days },
+    })
+      .populate({ path: "contract", match: { status: "active" } })
+      .populate("local")
+      .sort({ dueDate: 1 })
+      .lean(),
+    Contract.find({
+      status: "active",
+      endDate: { $gte: today, $lte: in30Days },
+    })
+      .populate("local")
+      .sort({ endDate: 1 })
+      .lean(),
+    Tax.find({
+      status: { $in: ["pending", "late"] },
+      dueDate: { $gte: today, $lte: in30Days },
+    })
+      .populate("local")
+      .sort({ dueDate: 1 })
+      .lean(),
+  ]);
 
-    res.render("dashboard", {
-      totalLocals,
-      availableLocals,
-      rentedLocals: activeContracts,
-      totalActiveContracts,
-      expiringContracts,
-      latePayments,
-      pendingThisMonth,
-      collectedThisMonth,
-      lateTaxes,
-      taxesDueThisMonth,
-      localsDetail,
-      globalDebt,
-      upcomingPayments,
-      upcomingContracts,
-      upcomingTaxes,
-      latePaymentsList,
-      paidThisMonthList,
-    });
+  // localsDetail sin N+1: una sola query de pagos para todos los contratos
+  const contractByLocal = Object.fromEntries(
+    allActiveContracts.map((c) => [c.local.toString(), c]),
+  );
+
+  const activeContractIds = allActiveContracts.map((c) => c._id);
+  const allPendingPayments = await Payment.find({
+    contract: { $in: activeContractIds },
+    status: { $in: ["pending", "partial", "late"] },
+  })
+    .sort({ dueDate: 1 })
+    .lean();
+
+  // Agrupar pagos por contrato en memoria
+  const paymentsByContract = {};
+  for (const p of allPendingPayments) {
+    const key = p.contract.toString();
+    if (!paymentsByContract[key]) paymentsByContract[key] = p; // solo el primero (más próximo)
+  }
+
+  const localsDetail = locals.map((local) => {
+    const contract = contractByLocal[local._id.toString()];
+    if (!contract) return { ...local, occupied: false };
+
+    const latestPayment = paymentsByContract[contract._id.toString()] || null;
+
+    return {
+      ...local,
+      occupied: true,
+      tenantName: contract.tenantName,
+      contractEnd: contract.endDate,
+      latestPayment,
+      latestDebt: latestPayment
+        ? latestPayment.amount - latestPayment.paidAmount
+        : 0,
+      latestStatus: latestPayment?.status || "paid",
+      latestDueDate: latestPayment?.dueDate,
+    };
+  });
+
+  // Valores derivados (sin tocar la DB)
+  const latePaymentsList = latePaymentsListRaw.filter(
+    (p) => p.contract !== null,
+  );
+  const upcomingPayments = upcomingPaymentsRaw.filter(
+    (p) => p.contract !== null,
+  );
+  const pendingThisMonth = pendingPaymentsThisMonth.filter(
+    (p) => p.amount - p.paidAmount > 0,
+  ).length;
+  const collectedThisMonth = paidThisMonthList.reduce(
+    (acc, t) => acc + t.amount,
+    0,
+  );
+  const globalDebt = latePaymentsList.reduce(
+    (acc, p) => acc + (p.amount - p.paidAmount),
+    0,
+  );
+
+  const prevMonthDate = new Date(Date.UTC(year, month - 1, 1));
+  const nextMonthDate = new Date(Date.UTC(year, month + 1, 1));
+
+  return {
+    totalLocals,
+    availableLocals: totalLocals - activeContracts,
+    rentedLocals: activeContracts,
+    totalActiveContracts: activeContracts,
+    expiringContracts,
+    latePayments: latePaymentsList.length,
+    pendingThisMonth,
+    collectedThisMonth,
+    lateTaxes,
+    taxesDueThisMonth,
+    localsDetail,
+    pendingPaymentsList,
+    globalDebt,
+    upcomingPayments,
+    upcomingContracts,
+    upcomingTaxes,
+    latePaymentsList,
+    paidThisMonthList,
+    year,
+    month,
+    prevYear: prevMonthDate.getUTCFullYear(),
+    prevMonth: prevMonthDate.getUTCMonth(),
+    nextYear: nextMonthDate.getUTCFullYear(),
+    nextMonth: nextMonthDate.getUTCMonth(),
+    currentMonth: new Date().getMonth(),
+    currentYear: new Date().getFullYear(),
+  };
+}
+
+router.get("/", async (req, res) => {
+  try {
+    const now = new Date();
+    const year = parseInt(req.query.year) || now.getFullYear();
+    const month =
+      req.query.month !== undefined
+        ? parseInt(req.query.month)
+        : now.getMonth();
+    const data = await getDashboardData(year, month);
+    res.render("dashboard", data);
   } catch (error) {
     console.log(error);
     res.send("Error cargando dashboard");
+  }
+});
+
+router.get("/fragment", async (req, res) => {
+  try {
+    const now = new Date();
+    const year = parseInt(req.query.year) || now.getFullYear();
+    const month =
+      req.query.month !== undefined
+        ? parseInt(req.query.month)
+        : now.getMonth();
+    const data = await getDashboardData(year, month);
+    res.render("dashboard", { ...data, layout: false });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Error cargando dashboard");
   }
 });
 
