@@ -11,6 +11,7 @@
 
   --bg: #f4f6fb;
   --surface: #ffffff;
+  --surface-alt: #fafbfd;
   --border: #e8ecf4;
 
   --text-primary: #0f1623;
@@ -37,6 +38,45 @@
   --font: "Plus Jakarta Sans", sans-serif;
 }
 
+/* =============================================
+   DARK MODE
+   ============================================= */
+[data-theme="dark"] {
+  --bg: #020617;
+  --surface: #0f172a;
+  --surface-alt: #1e293b;
+  --border: #1e293b;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --sidebar-bg: #020617;
+  --sidebar-text: #94a3b8;
+  --sidebar-active: #ffffff;
+  --sidebar-active-bg: rgba(255, 255, 255, 0.08);
+
+  --accent-blue-bg: #1e3a5f;
+  --accent-teal-bg: #0d3330;
+  --accent-green-bg: #0d2f1e;
+  --accent-orange-bg: #2d1f00;
+  --accent-red-bg: #2d1515;
+
+  --table-bg: #020617;
+  --table-hover: #1e293b;
+
+  --danger-bg: #2d1515;
+  --danger-border: #7f1d1d;
+  --danger-text: #f87171;
+}
+
+* {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+
 *,
 *::before,
 *::after {
@@ -52,6 +92,23 @@ body {
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+.theme-toggle {
+  margin-top: auto;
+  margin-bottom: 20px;
+  background: var(--sidebar-active-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  width: calc(100% - 0px);
+  transition: background 0.15s;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* =============================================
@@ -263,10 +320,6 @@ body {
 
 .stat-value--danger {
   color: var(--accent-red);
-}
-
-.stat-card--danger:has(.stat-value--danger) {
-  border-color: #fecaca;
 }
 
 .stat-content {
@@ -516,8 +569,8 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-muted);
-  background: #fafbfd;
-  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
 }
 
 .data-table tbody td {
@@ -532,7 +585,7 @@ body {
 }
 
 .data-table tbody tr:hover td {
-  background: #fafbfd;
+  background: var(--surface-alt);
 }
 
 .local-name {
@@ -636,14 +689,14 @@ table[border] th {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-muted);
-  background: #fafbfd;
-  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
 }
 
 table[border] td {
   padding: 12px 16px;
   font-size: 13px;
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
 }
 
 table[border] tr:last-child td {
@@ -651,7 +704,7 @@ table[border] tr:last-child td {
 }
 
 table[border] tr:hover td {
-  background: #fafbfd;
+  background: var(--surface-alt);
 }
 
 /* =============================================
