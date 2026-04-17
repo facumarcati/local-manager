@@ -1,52 +1,81 @@
-<h1>Nuevo impuesto</h1>
-
-<form action="/taxes" method="POST">
+<div class="page-header">
   <div>
-    <label>Local</label>
-    <select name="local" required>
-      {{#each locals}}
-        <option value="{{this._id}}">{{this.name}} — {{this.address}}</option>
-      {{/each}}
-    </select>
+    <h1 class="page-title">Nuevo impuesto</h1>
+    <p class="page-subtitle">Cargá un impuesto o servicio</p>
   </div>
+</div>
 
-  <div>
-    <label>Tipo</label>
-    <select name="type" required>
-      <option value="ABL">ABL</option>
-      <option value="Ingresos Brutos">Ingresos Brutos</option>
-      <option value="Municipal">Municipal</option>
-      <option value="Luz">Luz</option>
-      <option value="Gas">Gas</option>
-      <option value="Agua">Agua</option>
-      <option value="Otro">Otro</option>
-    </select>
+<div class="card">
+  <div class="card-body">
+    <form action="/taxes" method="POST">
+      <div>
+        <label>Corresponde a</label>
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input
+              type="checkbox"
+              name="isPersonal"
+              value="1"
+              id="isPersonal"
+            />
+            <span class="checkbox-label">
+              <span class="checkbox-name">Personal</span>
+              <span class="checkbox-address">Impuesto o servicio propio, no de
+                un local</span>
+            </span>
+          </label>
+          <div id="localsSection">
+            {{#each locals}}
+              <label class="checkbox-item">
+                <input type="checkbox" name="locals" value="{{this._id}}" />
+                <span class="checkbox-label">
+                  <span class="checkbox-name">{{this.name}}</span>
+                  <span class="checkbox-address">{{this.address}}</span>
+                </span>
+              </label>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+      <div>
+        <label>Tipo</label>
+        <select name="type" required>
+          <option value="">Seleccioná un tipo</option>
+          <option value="ABL">ABL</option>
+          <option value="Ingresos Brutos">Ingresos Brutos</option>
+          <option value="Municipal">Municipal</option>
+          <option value="Luz">Luz</option>
+          <option value="Gas">Gas</option>
+          <option value="Agua">Agua</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div>
+        <label>Monto</label>
+        <input type="number" name="amount" placeholder="0" required />
+      </div>
+      <div>
+        <label>Período</label>
+        <input type="text" name="period" placeholder="ej: 2026-02" required />
+      </div>
+      <div>
+        <label>Fecha de vencimiento</label>
+        <input type="date" name="dueDate" required />
+      </div>
+      <div>
+        <label>Notas</label>
+        <input type="text" name="notes" placeholder="Opcional" />
+      </div>
+      <button type="submit">Guardar impuesto</button>
+    </form>
   </div>
+</div>
 
-  <div>
-    <label>Monto</label>
-    <input type="number" name="amount" required />
-  </div>
-
-  <div>
-    <label>Período</label>
-    <input
-      type="text"
-      name="period"
-      placeholder="ej: 2do bimestre 2026"
-      required
-    />
-  </div>
-
-  <div>
-    <label>Fecha de vencimiento</label>
-    <input type="date" name="dueDate" required />
-  </div>
-
-  <div>
-    <label>Notas</label>
-    <input type="text" name="notes" placeholder="Opcional" />
-  </div>
-
-  <button type="submit">Guardar</button>
-</form>
+<script>
+  const isPersonal = document.getElementById('isPersonal'); const localsSection
+  = document.getElementById('localsSection');
+  isPersonal.addEventListener('change', () => { localsSection.style.opacity =
+  isPersonal.checked ? '0.4' : '1'; localsSection.style.pointerEvents =
+  isPersonal.checked ? 'none' : 'auto'; if (isPersonal.checked) {
+  localsSection.querySelectorAll('input').forEach(i => i.checked = false); } });
+</script>

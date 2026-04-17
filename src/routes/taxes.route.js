@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
     );
 
     const taxes = await Tax.find()
-      .populate("local")
+      .populate("locals")
       .sort({ dueDate: 1 })
       .lean();
 
@@ -38,10 +38,17 @@ router.get("/new", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { local, type, amount, period, dueDate, notes } = req.body;
+    const { locals, isPersonal, type, amount, period, dueDate, notes } =
+      req.body;
 
     await Tax.create({
-      local,
+      locals: isPersonal
+        ? []
+        : Array.isArray(locals)
+          ? locals
+          : locals
+            ? [locals]
+            : [],
       type,
       amount,
       period,

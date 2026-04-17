@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
 
 const taxSchema = new mongoose.Schema({
-  local: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Local",
-    required: true,
-  },
+  locals: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Local",
+    },
+  ],
   type: {
     type: String,
     enum: ["ABL", "Ingresos Brutos", "Municipal", "Luz", "Gas", "Agua", "Otro"],

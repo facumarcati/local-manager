@@ -1,13 +1,15 @@
-<h1>Impuestos</h1>
-
-<a href="/taxes/new">Cargar impuesto</a>
-
-<hr />
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Impuestos</h1>
+    <p class="page-subtitle">Gestión de impuestos y servicios por local</p>
+  </div>
+  <a href="/taxes/new" class="btn btn--primary">+ Nuevo impuesto</a>
+</div>
 
 <table border="1" cellpadding="5">
   <thead>
     <tr>
-      <th>Local</th>
+      <th>Local/es</th>
       <th>Tipo</th>
       <th>Período</th>
       <th>Monto</th>
@@ -22,51 +24,64 @@
     {{#if taxes.length}}
       {{#each taxes}}
         <tr>
-          <td>{{this.local.name}}</td>
+          <td>
+            {{#if this.locals.length}}
+              {{#each this.locals}}
+                <span>{{this.name}}</span>{{#unless @last}}, {{/unless}}
+              {{/each}}
+            {{else}}
+              <span class="badge badge--blue">Personal</span>
+            {{/if}}
+          </td>
           <td>{{this.type}}</td>
           <td>{{this.period}}</td>
           <td>${{this.amount}}</td>
           <td>{{formatDate this.dueDate}}</td>
-          <td>{{this.status}}</td>
+          <td>
+            {{#if (eq this.status "paid")}}
+              <span class="badge badge--green">Pagado</span>
+            {{else if (eq this.status "late")}}
+              <span class="badge badge--red">Vencido</span>
+            {{else}}
+              <span class="badge badge--gray">Pendiente</span>
+            {{/if}}
+          </td>
           <td>
             {{#if this.paidDate}}
               {{formatDate this.paidDate}}
             {{else}}
-              -
+              —
             {{/if}}
           </td>
-          <td>{{this.notes}}</td>
-          <td>
+          <td>{{#if this.notes}}{{this.notes}}{{else}}—{{/if}}</td>
+          <td class="actions-cell">
             {{#if (eq this.status "paid")}}
-              <form
-                action="/taxes/unpay/{{this._id}}"
-                method="POST"
-                style="display:inline;"
-              >
-                <button type="submit">Deshacer</button>
+              <form action="/taxes/unpay/{{this._id}}" method="POST">
+                <button
+                  type="submit"
+                  class="btn btn--sm btn--edit"
+                >Deshacer</button>
               </form>
             {{else}}
-              <form
-                action="/taxes/pay/{{this._id}}"
-                method="POST"
-                style="display:inline;"
-              >
-                <button type="submit">Marcar pagado</button>
+              <form action="/taxes/pay/{{this._id}}" method="POST">
+                <button type="submit" class="btn btn--sm btn--primary">Marcar
+                  pagado</button>
               </form>
             {{/if}}
-            <form
-              action="/taxes/delete/{{this._id}}"
-              method="POST"
-              style="display:inline;"
-            >
-              <button type="submit">Eliminar</button>
+            <form action="/taxes/delete/{{this._id}}" method="POST">
+              <button
+                type="submit"
+                class="btn btn--sm btn--danger"
+              >Eliminar</button>
             </form>
           </td>
         </tr>
       {{/each}}
     {{else}}
       <tr>
-        <td colspan="9">No hay impuestos cargados</td>
+        <td colspan="9" style="text-align:center; color: var(--text-muted);">
+          No hay impuestos cargados
+        </td>
       </tr>
     {{/if}}
   </tbody>

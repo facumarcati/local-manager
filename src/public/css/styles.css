@@ -70,6 +70,10 @@
   --danger-text: #f87171;
 }
 
+[data-theme="dark"] .alert-danger {
+  border: none;
+}
+
 * {
   transition:
     background-color 0.3s ease,
@@ -357,31 +361,31 @@ body {
   display: inline-flex;
   align-items: center;
   padding: 4px 8px;
-  border-radius: 100px;
+  border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.2px;
 }
 
 .badge--green {
-  background: #dcfce7;
-  color: #15803d;
+  background: #15803d;
+  color: #dcfce7;
 }
 .badge--gray {
   background: #f3f4f6;
-  color: #6b7280;
+  color: black;
 }
 .badge--orange {
   background: #fef3c7;
   color: #b45309;
 }
 .badge--red {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--accent-red);
+  color: white;
 }
 .badge--blue {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #1d4ed8;
+  color: #dbeafe;
 }
 
 /* =============================================
@@ -647,7 +651,7 @@ form textarea:focus {
 }
 
 form div {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 form button[type="submit"]:not(.btn),
@@ -899,6 +903,63 @@ hr {
   letter-spacing: -0.2px;
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 13.5px;
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-primary);
+  background: var(--surface);
+}
+
+.checkbox-item:hover {
+  border-color: var(--accent-teal);
+  background: var(--accent-teal-bg);
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-teal);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.checkbox-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.checkbox-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.checkbox-address {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+#localsSection {
+  margin-bottom: 0px;
 }
 
 /* =============================================
