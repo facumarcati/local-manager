@@ -1,28 +1,49 @@
-<div class="page-header">
+<a href="/contracts" class="back-link">← Volver a contratos</a>
+<header class="page-header">
   <div>
-    <h1 class="page-title">Ajustar monto</h1>
-    <p class="page-subtitle">
-      {{contract.local.name}}
-      -
-      {{contract.tenantName}}
-    </p>
+    <span class="eyebrow"
+      >{{contract.local.name}} · {{contract.tenantName}}</span
+    >
+    <h1>Ajustar alquiler</h1>
+    <p>Importe de referencia actual: $ {{formatMoney contract.baseRent}}</p>
   </div>
-</div>
-
-<form action="/contracts/adjust-contract/{{contract._id}}" method="POST">
-  <div>
-    <label>Monto actual</label>
-    <input type="number" value="{{contract.baseRent}}" disabled />
+</header>
+<form
+  class="form-card narrow"
+  method="post"
+  action="/contracts/adjust-contract/{{contract._id}}"
+  data-confirm="Se aplicará el importe a las cuotas pendientes desde la fecha elegida. Las cuotas ya cobradas por completo se conservan."
+>
+  <div class="field">
+    <label for="amount">Nuevo importe mensual</label
+    ><input
+      id="amount"
+      name="newAmount"
+      type="number"
+      min="0.01"
+      step="0.01"
+      required
+    />
   </div>
-  <div>
-    <label>Nuevo monto</label>
-    <input type="number" name="newAmount" required />
+  <div class="field">
+    <label for="date">Aplicar a vencimientos desde</label
+    ><input id="date" name="fromDate" type="date" required />
   </div>
-  <div>
-    <label>Aplicar desde</label>
-    <input type="date" name="fromDate" required />
+  <div class="field">
+    <label for="reason">Motivo del ajuste</label
+    ><input
+      id="reason"
+      name="reason"
+      required
+      placeholder="Ej.: aumento acordado desde marzo"
+    />
   </div>
-  <button class="btn btn--primary">
-    Aplicar ajuste
-  </button>
+  <div class="notice">
+    El cambio se guarda en el historial de cada cuota. También podés usar una
+    fecha anterior.
+  </div>
+  <div class="form-actions">
+    <a class="btn btn--secondary" href="/contracts">Cancelar</a
+    ><button class="btn btn--primary" type="submit">Aplicar ajuste</button>
+  </div>
 </form>

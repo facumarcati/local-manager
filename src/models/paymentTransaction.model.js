@@ -6,6 +6,10 @@ const paymentTransactionSchema = new mongoose.Schema({
     ref: "Payment",
     required: true,
   },
+  operationId: { type: String, unique: true, sparse: true },
+  notes: { type: String, default: "" },
+  reversedAt: { type: Date, default: null },
+  reversalReason: { type: String, default: "" },
   amount: {
     type: Number,
     required: true,

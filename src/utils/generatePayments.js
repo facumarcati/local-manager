@@ -1,46 +1,44 @@
 export function generatePayments(contract) {
+  const start = new Date(contract.startDate),
+    end = new Date(contract.endDate);
+  if (
+    !Number.isFinite(start.getTime()) ||
+    !Number.isFinite(end.getTime()) ||
+    start > end
+  )
+    throw new Error("Fechas de contrato inválidas.");
+  if (
+    !Number.isInteger(Number(contract.paymentDay)) ||
+    contract.paymentDay < 1 ||
+    contract.paymentDay > 31
+  )
+    throw new Error("Día de vencimiento inválido.");
   const payments = [];
-
-  const start = new Date(contract.startDate);
-  const end = new Date(contract.endDate);
-
-  let current = new Date(start);
-
-  current.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-
-  while (true) {
-    const year = current.getFullYear();
-    const month = current.getMonth();
-
-    const dueDate = getDueDate(year, month, contract.paymentDay);
-
-    if (dueDate > end) break;
-
-    if (dueDate >= start) {
-      const period = `${year}-${String(month + 1).padStart(2, "0")}`;
-
+  let year = start.getUTCFullYear(),
+    month = start.getUTCMonth();
+  while (Date.UTC(year, month, 1) <= end.getTime()) {
+    const day = Math.min(
+      Number(contract.paymentDay),
+      new Date(Date.UTC(year, month + 1, 0)).getUTCDate(),
+    );
+    const dueDate = new Date(Date.UTC(year, month, day));
+    // Incluye el primer mes; si el vencimiento ya pasó, usa el inicio del contrato.
+    const actualDue = dueDate < start ? new Date(start) : dueDate;
+    if (actualDue <= end)
       payments.push({
         contract: contract._id,
         local: contract.local,
         amount: contract.baseRent,
         paidAmount: 0,
-        period,
-        dueDate,
+        period: year + "-" + String(month + 1).padStart(2, "0"),
+        dueDate: actualDue,
         status: "pending",
       });
+    month++;
+    if (month === 12) {
+      month = 0;
+      year++;
     }
-
-    current.setMonth(current.getMonth() + 1);
   }
-
   return payments;
-}
-
-function getDueDate(year, month, paymentDay) {
-  const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-
-  const day = Math.min(paymentDay, lastDayOfMonth);
-
-  return new Date(year, month, day);
 }

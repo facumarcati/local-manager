@@ -1,52 +1,92 @@
-<h1>Nuevo impuesto</h1>
-
-<form action="/taxes" method="POST">
+<a href="/taxes" class="back-link">← Volver a gastos</a>
+<header class="page-header">
   <div>
-    <label>Local</label>
-    <select name="local" required>
-      {{#each locals}}
-        <option value="{{this._id}}">{{this.name}} — {{this.address}}</option>
-      {{/each}}
-    </select>
+    <span class="eyebrow">Gastos y servicios</span>
+    <h1>Cargar un gasto</h1>
+    <p>Una sola factura, aunque corresponda a varios locales.</p>
   </div>
-
-  <div>
-    <label>Tipo</label>
-    <select name="type" required>
-      <option value="ABL">ABL</option>
-      <option value="Ingresos Brutos">Ingresos Brutos</option>
-      <option value="Municipal">Municipal</option>
-      <option value="Luz">Luz</option>
-      <option value="Gas">Gas</option>
-      <option value="Agua">Agua</option>
-      <option value="Otro">Otro</option>
-    </select>
+</header>
+{{#if locals.length }}
+<form method="post" action="/taxes" class="form-card">
+  <fieldset>
+    <legend>¿A qué locales corresponde?</legend>
+    <p class="field-help">
+      El importe se registra una sola vez. No se cobra a los inquilinos.
+    </p>
+    <button type="button" class="text-button" data-select-all>
+      Seleccionar todos
+    </button>
+    <div class="checkbox-grid">
+      {{#each locals }}<label class="checkbox-card"
+        ><input name="locals" type="checkbox" value="{{_id}}" /><span
+          >{{name}}<small>{{address}}</small></span
+        ></label
+      >{{/each}}
+    </div>
+  </fieldset>
+  <div class="form-grid">
+    <div>
+      <label for="type">Servicio o impuesto</label
+      ><select id="type" name="type" required>
+        <option value="">Elegir…</option>
+        <option>Agua</option>
+        <option>Gas</option>
+        <option>Luz</option>
+        <option>ABL</option>
+        <option>Municipal</option>
+        <option>Ingresos Brutos</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <div>
+      <label for="amount">Importe total de la factura</label>
+      <div class="input-money">
+        <span>$</span
+        ><input
+          id="amount"
+          name="amount"
+          type="number"
+          min="0.01"
+          step="0.01"
+          required
+        />
+      </div>
+    </div>
+    <div>
+      <label for="period">Período facturado</label
+      ><input
+        id="period"
+        name="period"
+        placeholder="Ej.: octubre 2026 o 4.º bimestre"
+        required
+      />
+    </div>
+    <div>
+      <label for="dueDate">Fecha de vencimiento</label
+      ><input id="dueDate" type="date" name="dueDate" required />
+      <p class="field-help">
+        Puede ser una fecha anterior para completar el historial.
+      </p>
+    </div>
+    <div class="full-width">
+      <label for="notes">Notas <span class="optional">(opcional)</span></label
+      ><textarea
+        id="notes"
+        name="notes"
+        rows="3"
+        placeholder="Número de factura, proveedor o aclaraciones"
+      ></textarea>
+    </div>
   </div>
-
-  <div>
-    <label>Monto</label>
-    <input type="number" name="amount" required />
+  <div class="form-actions">
+    <a class="btn btn--secondary" href="/taxes">Cancelar</a
+    ><button class="btn btn--primary" type="submit">Guardar gasto</button>
   </div>
-
-  <div>
-    <label>Período</label>
-    <input
-      type="text"
-      name="period"
-      placeholder="ej: 2do bimestre 2026"
-      required
-    />
-  </div>
-
-  <div>
-    <label>Fecha de vencimiento</label>
-    <input type="date" name="dueDate" required />
-  </div>
-
-  <div>
-    <label>Notas</label>
-    <input type="text" name="notes" placeholder="Opcional" />
-  </div>
-
-  <button type="submit">Guardar</button>
 </form>
+{{else}}
+<section class="card empty-state">
+  <h2>Primero agregá un local</h2>
+  <p>Así podés indicar a qué propiedad corresponde cada factura.</p>
+  <a class="btn btn--primary" href="/locals/new">Agregar local</a>
+</section>
+{{/if}}

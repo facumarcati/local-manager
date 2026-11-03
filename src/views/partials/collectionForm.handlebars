@@ -1,0 +1,65 @@
+<form
+  method="post"
+  action="{{action}}"
+  data-confirm="Revisá el importe y la fecha antes de confirmar este movimiento."
+  class="form-card"
+>
+  <input type="hidden" name="operationId" value="{{operationId}}" />
+  <div class="form-grid">
+    <div>
+      <label for="pay-amount">Importe del movimiento</label>
+      <div class="input-money">
+        <span>$</span
+        ><input
+          id="pay-amount"
+          name="amount"
+          type="number"
+          min="0.01"
+          step="0.01"
+          max="{{remaining}}"
+          value="{{remaining}}"
+          required
+        />
+      </div>
+      <p class="field-help">Podés registrar una parte o el saldo completo.</p>
+    </div>
+    <div>
+      <label for="pay-date">Fecha real del movimiento</label
+      ><input
+        id="pay-date"
+        name="date"
+        type="date"
+        value="{{today}}"
+        max="{{today}}"
+        required
+      />
+      <p class="field-help">También podés cargar movimientos anteriores.</p>
+    </div>
+    <div>
+      <label for="pay-method">Medio de pago</label
+      ><select id="pay-method" name="method" required>
+        <option value="">Elegir medio…</option>
+        <option>Efectivo</option>
+        <option>Transferencia</option>
+        <option>Depósito</option>
+        <option>Cheque</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <div>
+      <label for="pay-notes"
+        >Notas <span class="optional">(opcional)</span></label
+      ><input
+        id="pay-notes"
+        name="notes"
+        placeholder="Referencia, comprobante o aclaración"
+      />
+    </div>
+  </div>
+  <div class="payment-preview" aria-live="polite" data-balance="{{remaining}}">
+    Saldo pendiente: $ {{formatMoney remaining}}
+  </div>
+  <div class="form-actions">
+    <button class="btn btn--primary" type="submit">{{button}}</button>
+  </div>
+</form>

@@ -1,389 +1,202 @@
 <div id="dashboard-content">
-  <div class="period-selector">
-     <a href="#" data-year="{{prevYear}}" data-month="{{prevMonth}}" class="change-month">
-      ← Mes anterior
-    </a>
-    <span>
-      {{monthName month}} {{year}}
-    </span>
-    <a href="#" data-year="{{nextYear}}" data-month="{{nextMonth}}" class="change-month">
-      Mes siguiente →
-    </a>
-  </div>
-
-  <div class="page-header">
+  <header class="page-header">
     <div>
-      <h1 class="page-title">Dashboard - {{monthName month}} {{year}}</h1>
-      <p class="page-subtitle">Resumen general del estado de tus propiedades</p>
+      <h1>Inicio</h1>
+      <p>Estado de los alquileres y gastos de tus locales.</p>
+    </div>
+    <div class="header-actions">
+      <a class="btn btn--secondary" href="/payments">Ver cobros</a
+      ><a class="btn btn--primary" href="/taxes/new">Cargar gasto</a>
+    </div>
+  </header>
+  <div class="overview-toolbar">
+    <h2>Resumen del mes</h2>
+    <div class="period-selector">
+      <a
+        data-month-link
+        href="/?year={{prevYear}}&month={{prevMonth}}"
+        aria-label="Mes anterior"
+        >←</a
+      ><strong>{{monthName month}} {{year}}</strong
+      ><a
+        data-month-link
+        href="/?year={{nextYear}}&month={{nextMonth}}"
+        aria-label="Mes siguiente"
+        >→</a
+      ><a data-month-link href="/" class="period-today">Mes actual</a>
     </div>
   </div>
-
-  {{!-- ALERTA DE DEUDA --}}
-  {{#if (gt globalDebt 0)}}
-    <div class="alert alert-danger">
-      <span class="alert-icon">⚠</span>
-      <div>
-        <strong>Deuda vencida sin cobrar</strong>
-        <span class="alert-amount">${{formatMoney globalDebt}}</span>
-      </div>
-    </div>
-  {{/if}}
-
-  {{!-- STAT CARDS --}}
+  <p class="month-feedback" role="alert" hidden></p>
   <div class="stats-grid">
-    <div class="stat-card stat-card--danger">
-      <div class="stat-icon stat-icon--red">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-      </div>
-
-      <div class="stat-content">
-        <span class="stat-label">Deuda vencida</span>
-
-        <span class="stat-value {{#if (gt globalDebt 0)}}stat-value--danger{{/if}}">
-          ${{formatMoney globalDebt}}
-        </span>
-      </div>
-
-      <div class="stat-sub">
-        {{#if (gt latePayments 0)}}
-          <span class="badge badge--red">
-            {{latePayments}} pagos vencidos
-          </span>
-        {{else}}
-          <span class="badge badge--green">Sin pagos vencidos</span>
-        {{/if}}
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon stat-icon--blue">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label">Locales totales</span>
-        <span class="stat-value">{{totalLocals}}</span>
-      </div>
-      <div class="stat-sub">
-        <span class="badge badge--green">{{rentedLocals}} alquilados</span>
-        <span class="badge badge--gray">{{availableLocals}} libres</span>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon stat-icon--teal">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label">Contratos activos</span>
-        <span class="stat-value">{{totalActiveContracts}}</span>
-      </div>
-      <div class="stat-sub">
-        {{#if (gt expiringContracts 0)}}
-          <span class="badge badge--orange">{{expiringContracts}} vencen pronto</span>
-        {{else}}
-          <span class="badge badge--green">Sin vencimientos</span>
-        {{/if}}
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon stat-icon--green">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="1" x2="12" y2="23"/>
-          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label">Cobrado este mes</span>
-        <span class="stat-value">${{formatMoney collectedThisMonth}}</span>
-      </div>
-      <div class="stat-sub">
-        {{#if (gt pendingThisMonth 0)}}
-          <span class="badge badge--gray">
-            {{pendingThisMonth}} {{#if (eq pendingThisMonth 1)}}pendiente{{else}}pendientes{{/if}}
-          </span>
-        {{/if}}
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon stat-icon--orange">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label">Impuestos</span>
-        <span class="stat-value">{{taxesDueThisMonth}}</span>
-      </div>
-      <div class="stat-sub">
-        <span class="badge badge--gray">vencen este mes</span>
-        {{#if (gt lateTaxes 0)}}
-          <span class="badge badge--red">{{lateTaxes}} vencidos</span>
-        {{/if}}
-      </div>
-    </div>
+    <article class="stat-card">
+      <span class="stat-label">Alquileres cobrados</span
+      ><strong class="stat-value">$ {{formatMoney collected}}</strong
+      ><span class="stat-help">Cobros recibidos en el mes</span>
+    </article>
+    <article class="stat-card">
+      <span class="stat-label">Gastos pagados</span
+      ><strong class="stat-value">$ {{formatMoney paidExpenses}}</strong
+      ><span class="stat-help">Servicios e impuestos abonados</span>
+    </article>
+    <article class="stat-card">
+      <span class="stat-label">Saldo del mes</span
+      ><strong class="stat-value">$ {{formatMoney net}}</strong
+      ><span class="stat-help">Cobros menos gastos</span>
+    </article>
   </div>
-
-  <h2>Deudas vencidas</h2>
-
-  <table border="1" cellpadding="5">
-    <thead>
-      <tr>
-        <th>Local</th>
-        <th>Inquilino</th>
-        <th>Período</th>
-        <th>Deuda</th>
-        <th>Vencimiento</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#if latePaymentsList.length}}
-        {{#each latePaymentsList}}
+  {{#unless hasLocals}}
+  <section class="setup-panel">
+    <div>
+      <h2>Agregá el primer local</h2>
+      <p>Podés empezar con los datos actuales o reconstruir el historial.</p>
+      <a class="btn btn--primary" href="/locals/new">Agregar local</a>
+    </div>
+    <ol class="setup-steps">
+      <li>
+        <strong>Locales</strong
+        ><span>Nombre y dirección de cada propiedad.</span>
+      </li>
+      <li>
+        <strong>Contratos</strong
+        ><span>Inquilino, alquiler y fechas del contrato.</span>
+      </li>
+      <li>
+        <strong>Cobros y gastos</strong
+        ><span>Movimientos con su fecha real.</span>
+      </li>
+    </ol>
+  </section>
+  {{/unless}}
+  <section class="card section-space">
+    <div class="card-header">
+      <div>
+        <h2>Alquileres con deuda vencida</h2>
+        <p>Situación actual · {{lateCount}} cuotas pendientes</p>
+      </div>
+      {{#if (gt debt 0)}}<strong class="danger">$ {{formatMoney debt}}</strong
+      >{{/if}}<a href="/payments">Ver todos</a>
+    </div>
+    <div class="table-wrap">
+      <table class="{{#unless latePayments.length}}table-is-empty{{/unless}}">
+        <caption class="sr-only">
+          Cuotas vencidas de contratos actuales y anteriores
+        </caption>
+        <thead>
           <tr>
-            <td>{{this.local.name}}</td>
-            <td>{{this.contract.tenantName}}</td>
-            <td>{{this.period}}</td>
-            <td class="amount-owed">
-              ${{formatMoney (subtract this.amount this.paidAmount)}}
-              {{#if (gt this.paidAmount 0)}}
-                <small>(pagó ${{formatMoney this.paidAmount}})</small>
-              {{/if}}
-            </td>
-            <td>{{formatDate this.dueDate}}</td>
+            <th>Local e inquilino</th>
+            <th>Período</th>
+            <th>Vencimiento</th>
+            <th class="align-right">Falta cobrar</th>
+            <th>Acción</th>
           </tr>
-        {{/each}}
-      {{else}}
-        <tr>
-          <td colspan="5">No hay deudas vencidas 🎉</td>
-        </tr>
-      {{/if}}
-    </tbody>
-  </table>
-
-  <h2>Cobros pendientes</h2>
-
-  <table border="1" cellpadding="5">
-    <thead>
-      <tr>
-        <th>Local</th>
-        <th>Inquilino</th>
-        <th>Período</th>
-        <th>Total</th>
-        <th>Pagado</th>
-        <th>Restante</th>
-        <th>Vencimiento</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {{#if pendingPaymentsList.length}}
-        {{#each pendingPaymentsList}}
+        </thead>
+        <tbody>
+          {{#each latePayments}}
           <tr>
-            <td>{{this.local.name}}</td>
-            <td>{{this.contract.tenantName}}</td>
-            <td>{{this.period}}</td>
-
-            <td>${{this.amount}}</td>
-            <td>${{this.paidAmount}}</td>
             <td>
-              ${{formatMoney (subtract this.amount this.paidAmount)}}
+              <strong>{{local.name}}</strong
+              ><small>{{contract.tenantName}}</small>
             </td>
-
-            <td>{{formatDate this.dueDate}}</td>
+            <td>{{periodName period}}</td>
+            <td>{{formatDate dueDate}}</td>
+            <td class="money align-right danger">
+              $ {{formatMoney remaining}}
+            </td>
+            <td>
+              <a class="btn btn--secondary" href="/payments/detail/{{_id}}"
+                >Registrar cobro</a
+              >
+            </td>
           </tr>
-        {{/each}}
-      {{else}}
-        <tr>
-          <td colspan="7">No hay cobros pendientes 🎉</td>
-        </tr>
-      {{/if}}
-    </tbody>
-  </table>
-
-  <h2>Cobros del mes</h2>
-
-  <table border="1" cellpadding="5" style="margin-bottom: 30px;">
-    <thead>
-      <tr>
-        <th>Local</th>
-        <th>Inquilino</th>
-        <th>Período</th>
-        <th>Monto</th>
-        <th>Fecha de pago</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#if paidThisMonthList.length}}
-        {{#each paidThisMonthList}}
+          {{else}}
           <tr>
-            <td>{{this.payment.local.name}}</td>
-            <td>{{this.payment.contract.tenantName}}</td>
-            <td>{{this.payment.period}}</td>
-            <td class="amount-ok">
-              ${{formatMoney this.amount}}
+            <td colspan="5" class="table-empty">
+              No hay alquileres vencidos por cobrar.
             </td>
-            <td>{{formatDate this.date}}</td>
           </tr>
-        {{/each}}
-      {{else}}
-        <tr>
-          <td colspan="5">No hay cobros este mes</td>
-        </tr>
-      {{/if}}
-    </tbody>
-  </table>
-
-  {{!-- VENCIMIENTOS PROXIMOS --}}
-  <div class="section-grid">
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">Vencimientos próximos</h2>
-        <span class="card-subtitle">Próximos 30 días</span>
-      </div>
-      <div class="card-body">
-        {{#if upcomingContracts.length}}
-          <div class="upcoming-group">
-            <span class="upcoming-group-label">Contratos</span>
-            {{#each upcomingContracts}}
-              <div class="upcoming-item upcoming-item--contract">
-                <span class="upcoming-dot upcoming-dot--blue"></span>
-                <div class="upcoming-info">
-                  <span class="upcoming-name">{{this.local.name}}</span>
-                  <span class="upcoming-detail">{{this.tenantName}}</span>
-                </div>
-                <span class="upcoming-date">{{formatDate this.endDate}}</span>
-              </div>
-            {{/each}}
-          </div>
-        {{/if}}
-
-        {{#if upcomingPayments.length}}
-          <div class="upcoming-group">
-            <span class="upcoming-group-label">Pagos</span>
-            {{#each upcomingPayments}}
-              <div class="upcoming-item {{#if (eq this.status "late")}}upcoming-item--late{{/if}}">
-                <span class="upcoming-dot {{#if (eq this.status "late")}}upcoming-dot--red{{else}}upcoming-dot--teal{{/if}}"></span>
-                <div class="upcoming-info">
-                  <span class="upcoming-name">{{this.local.name}}</span>
-                  <span class="upcoming-detail">{{monthName this.periodMonth}} {{this.periodYear}}</span>
-                </div>
-                <div class="upcoming-right">
-                  <span class="upcoming-amount">
-                    ${{formatMoney (subtract this.amount this.paidAmount)}}
-                  </span>
-                  <span class="upcoming-due">{{formatDate this.dueDate}}</span>
-                </div>
-              </div>
-            {{/each}}
-          </div>
-        {{/if}}
-
-        {{#if upcomingTaxes.length}}
-          <div class="upcoming-group">
-            <span class="upcoming-group-label">Impuestos</span>
-            {{#each upcomingTaxes}}
-              <div class="upcoming-item {{#if (eq this.status "late")}}upcoming-item--late{{/if}}">
-                <span class="upcoming-dot upcoming-dot--orange"></span>
-                <div class="upcoming-info">
-                  <span class="upcoming-name">{{this.type}} — {{this.local.name}}</span>
-                  <span class="upcoming-detail">{{this.period}}</span>
-                </div>
-                <span class="upcoming-date">{{formatDate this.dueDate}}</span>
-              </div>
-            {{/each}}
-          </div>
-        {{/if}}
-
-        {{#unless upcomingContracts.length}}
-          {{#unless upcomingPayments.length}}
-            {{#unless upcomingTaxes.length}}
-              <div class="empty-state">
-                <span>✓</span>
-                <p>Sin vencimientos próximos</p>
-              </div>
-            {{/unless}}
-          {{/unless}}
-        {{/unless}}
-      </div>
+          {{/each}}
+        </tbody>
+      </table>
     </div>
-
-    {{!-- ESTADO POR LOCAL --}}
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">Estado por local</h2>
+  </section>
+  <section class="card section-space">
+    <div class="card-header">
+      <div>
+        <h2>Gastos por pagar</h2>
+        <p>Ordenados por vencimiento · {{expenseCount}} facturas pendientes</p>
       </div>
-      <div class="card-body card-body--flush">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Local</th>
-              <th>Inquilino</th>
-              <th>Fin contrato</th>
-              <th>Deuda</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{#each localsDetail}}
-              <tr>
-                <td>
-                  <span class="local-name">{{this.name}}</span>
-                </td>
-                {{#if this.occupied}}
-                  <td>{{this.tenantName}}</td>
-                  <td>{{formatDate this.contractEnd}}</td>
-                  <td>
-                    {{#if (eq this.latestStatus "late")}}
-                      <span class="amount-owed">${{formatMoney this.latestDebt}} (Vencido)</span>
-                    {{else if (eq this.latestStatus "pending")}}
-                      <span class="amount-pending">${{formatMoney this.latestDebt}} (Pendiente)</span>
-                    {{else if (eq this.latestStatus "partial")}}
-                      <span class="amount-pending">
-                        ${{formatMoney this.latestDebt}} (Parcial)
-                      </span>
-                    {{else}}
-                      <span class="amount-ok">Al día ✓</span>
-                    {{/if}}
-                  </td>
-                {{else}}
-                  <td colspan="3">
-                    <span class="badge badge--gray">Disponible</span>
-                  </td>
-                {{/if}}
-              </tr>
-            {{/each}}
-          </tbody>
-        </table>
-      </div>
+      <a href="/taxes">Ver todos</a>
     </div>
-  </div>
-
-  <script>
-    document.addEventListener("click", function (e) {
-      const btn = e.target.closest(".change-month");
-      if (!btn) return;
-
-      e.preventDefault();
-
-      const year = btn.dataset.year;
-      const month = btn.dataset.month;
-
-      fetch(`/fragment?year=${year}&month=${month}`)
-        .then(r => r.text())
-        .then(html => {
-          document.getElementById("dashboard-content").innerHTML = html;
-        });
-    });
-  </script>
+    <div class="table-wrap">
+      <table
+        class="{{#unless upcomingExpenses.length}}table-is-empty{{/unless}}"
+      >
+        <caption class="sr-only">
+          Servicios e impuestos pendientes
+        </caption>
+        <thead>
+          <tr>
+            <th>Concepto y locales</th>
+            <th>Período</th>
+            <th>Vencimiento</th>
+            <th class="align-right">Falta pagar</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each upcomingExpenses}}
+          <tr>
+            <td><strong>{{type}}</strong><small>{{> expenseLocals}}</small></td>
+            <td>{{period}}</td>
+            <td class="{{#if overdue}}danger{{/if}}">{{formatDate dueDate}}</td>
+            <td class="money align-right">$ {{formatMoney remaining}}</td>
+            <td>
+              <a class="btn btn--secondary" href="/taxes/detail/{{_id}}"
+                >Registrar pago</a
+              >
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="5" class="table-empty">
+              No hay gastos pendientes de pago.
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {{#if hasLocals}}
+  <section class="card section-space">
+    <div class="card-header">
+      <h2>Locales</h2>
+      <a href="/locals">Administrar locales</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Local</th>
+            <th>Inquilino actual</th>
+            <th class="align-right">Deuda vencida</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each locals}}
+          <tr>
+            <td><strong>{{name}}</strong><small>{{address}}</small></td>
+            <td>
+              {{#if tenantName}}{{tenantName}}{{else}}Sin contrato activo{{/if}}
+            </td>
+            <td class="money align-right {{#if (gt debt 0)}}danger{{/if}}">
+              $ {{formatMoney debt}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {{/if}}
 </div>
-

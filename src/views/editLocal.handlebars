@@ -1,32 +1,38 @@
-<h1>Editar local</h1>
-
-<form action="/locals/edit/{{local._id}}" method="POST">
-
+<a class="back-link" href="/locals">← Volver a locales</a>
+<header class="page-header">
   <div>
-    <label>Nombre</label>
-    <input type="text" name="name" value="{{local.name}}" required />
+    <span class="eyebrow">Propiedades</span>
+    <h1>Editar local</h1>
+    <p>Usá un nombre fácil de reconocer, como “Local de la esquina”.</p>
   </div>
-
-  <div>
-    <label>Dirección</label>
-    <input type="text" name="address" value="{{local.address}}" required />
+</header>
+<form
+  action="/locals/edit/{{local._id}}"
+  method="post"
+  class="form-card narrow"
+>
+  <div class="field">
+    <label for="name">Nombre del local</label
+    ><input
+      id="name"
+      name="name"
+      value="{{local.name}}"
+      required
+      placeholder="Ej.: Local 1"
+    />
   </div>
-
-  <div>
-    <label>Estado</label>
-    <select name="status">
-      <option value="available"
-      {{#if (eq local.status "available")}} selected {{/if}}>
-        Disponible
-      </option>
-      <option value="rented"
-      {{#if (eq local.status "rented")}} selected {{/if}}>
-        Alquilado
-      </option>
-    </select>
+  <div class="field">
+    <label for="address">Dirección</label
+    ><input
+      id="address"
+      name="address"
+      value="{{local.address}}"
+      required
+      placeholder="Calle y número"
+    />
   </div>
-
-  <button type="submit">
-    Guardar cambios
-  </button>
+  <div class="form-actions">
+    <a href="/locals" class="btn btn--secondary">Cancelar</a
+    ><button class="btn btn--primary" type="submit">Guardar local</button>
+  </div>
 </form>

@@ -1,45 +1,85 @@
-<h1>Nuevo contrato</h1>
-
-<form action="/contracts" method="POST">
+<a href="/contracts" class="back-link">← Volver a contratos</a>
+<header class="page-header">
   <div>
-    <label>Local</label>
-    <select name="local" required>
-      {{#each locals}}
-        <option value="{{this._id}}">
-          {{this.name}}
-          -
-          {{this.address}}
-        </option>
-      {{/each}}
-    </select>
+    <span class="eyebrow">Alquileres</span>
+    <h1>Cargar un contrato</h1>
+    <p>Actual o anterior: las cuotas se crean desde la fecha de inicio.</p>
   </div>
-
-  <div>
-    <label>Inquilino</label>
-    <input type="text" name="tenantName" required />
+</header>
+{{#if locals.length }}
+<form action="/contracts" method="post" class="form-card">
+  <div class="form-grid">
+    <div>
+      <label for="local">Local</label
+      ><select id="local" name="local" required>
+        <option value="">Elegir local…</option>
+        {{#each locals}}
+        <option value="{{_id}}">{{name}} · {{address}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <div>
+      <label for="tenant">Nombre del inquilino</label
+      ><input id="tenant" name="tenantName" required />
+    </div>
+    <div>
+      <label for="rent">Importe mensual del alquiler</label>
+      <div class="input-money">
+        <span>$</span
+        ><input
+          id="rent"
+          name="baseRent"
+          type="number"
+          step="0.01"
+          min="0.01"
+          required
+        />
+      </div>
+    </div>
+    <div>
+      <label for="day">Día de vencimiento mensual</label
+      ><input
+        id="day"
+        name="paymentDay"
+        type="number"
+        min="1"
+        max="31"
+        value="10"
+        required
+      />
+    </div>
+    <div>
+      <label for="start">Inicio del contrato</label
+      ><input id="start" name="startDate" type="date" required />
+    </div>
+    <div>
+      <label for="end">Fin del contrato</label
+      ><input id="end" name="endDate" type="date" required />
+    </div>
   </div>
-
-  <div>
-    <label>Monto alquiler</label>
-    <input type="number" name="baseRent" required />
+  <label class="checkbox-card historical"
+    ><input name="historical" type="checkbox" /><span
+      >Este contrato ya terminó<small
+        >Guardarlo como anterior, sin cambiar la ocupación actual del
+        local.</small
+      ></span
+    ></label
+  >
+  <div class="notice">
+    Se crea una cuota completa por mes. El primer mes se incluye sin prorratear;
+    si corresponde otro importe, podés corregir esa cuota. Para registrar
+    aumentos anteriores, ajustá las cuotas por fecha antes de cargar sus cobros.
   </div>
-
-  <div>
-    <label>Día de pago</label>
-    <input type="number" name="paymentDay" min="1" max="31" required />
+  <div class="form-actions">
+    <a class="btn btn--secondary" href="/contracts">Cancelar</a
+    ><button class="btn btn--primary" type="submit">
+      Guardar contrato y crear cuotas
+    </button>
   </div>
-
-  <div>
-    <label>Fecha inicio</label>
-    <input type="date" name="startDate" required />
-  </div>
-
-  <div>
-    <label>Fecha fin</label>
-    <input type="date" name="endDate" required />
-  </div>
-
-  <button type="submit">
-    Guardar contrato
-  </button>
 </form>
+{{else}}
+<section class="card empty-state">
+  <h2>Primero agregá un local</h2>
+  <a class="btn btn--primary" href="/locals/new">Agregar local</a>
+</section>
+{{/if}}

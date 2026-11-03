@@ -1,6 +1,17 @@
 import mongoose from "mongoose";
 
 const paymentSchema = new mongoose.Schema({
+  notes: { type: String, default: "" },
+  adjustments: [
+    {
+      date: Date,
+      reason: String,
+      previousAmount: Number,
+      amount: Number,
+      previousDueDate: Date,
+      dueDate: Date,
+    },
+  ],
   contract: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Contract",
@@ -37,6 +48,8 @@ const paymentSchema = new mongoose.Schema({
     default: "pending",
   },
 });
+
+paymentSchema.index({ contract: 1, period: 1 }, { unique: true });
 
 const Payment = mongoose.model("Payment", paymentSchema);
 

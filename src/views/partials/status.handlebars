@@ -1,0 +1,6 @@
+{{#if (eq status "paid")}}<span class="badge badge--green">Completado</span
+>{{else if overdue}}<span class="badge badge--red"
+  >Vencido{{#if (gt paidAmount 0)}} · pago parcial{{/if}}</span
+>{{else if (gt paidAmount 0) }}<span class="badge badge--orange"
+  >Pago parcial</span
+>{{else}}<span class="badge badge--gray">Pendiente</span>{{/if}}

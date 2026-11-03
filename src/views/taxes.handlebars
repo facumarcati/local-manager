@@ -1,73 +1,71 @@
-<h1>Impuestos</h1>
-
-<a href="/taxes/new">Cargar impuesto</a>
-
-<hr />
-
-<table border="1" cellpadding="5">
-  <thead>
-    <tr>
-      <th>Local</th>
-      <th>Tipo</th>
-      <th>Período</th>
-      <th>Monto</th>
-      <th>Vencimiento</th>
-      <th>Estado</th>
-      <th>Fecha de pago</th>
-      <th>Notas</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#if taxes.length}}
-      {{#each taxes}}
-        <tr>
-          <td>{{this.local.name}}</td>
-          <td>{{this.type}}</td>
-          <td>{{this.period}}</td>
-          <td>${{this.amount}}</td>
-          <td>{{formatDate this.dueDate}}</td>
-          <td>{{this.status}}</td>
-          <td>
-            {{#if this.paidDate}}
-              {{formatDate this.paidDate}}
-            {{else}}
-              -
-            {{/if}}
-          </td>
-          <td>{{this.notes}}</td>
-          <td>
-            {{#if (eq this.status "paid")}}
-              <form
-                action="/taxes/unpay/{{this._id}}"
-                method="POST"
-                style="display:inline;"
-              >
-                <button type="submit">Deshacer</button>
-              </form>
-            {{else}}
-              <form
-                action="/taxes/pay/{{this._id}}"
-                method="POST"
-                style="display:inline;"
-              >
-                <button type="submit">Marcar pagado</button>
-              </form>
-            {{/if}}
-            <form
-              action="/taxes/delete/{{this._id}}"
-              method="POST"
-              style="display:inline;"
-            >
-              <button type="submit">Eliminar</button>
-            </form>
-          </td>
-        </tr>
-      {{/each}}
-    {{else}}
-      <tr>
-        <td colspan="9">No hay impuestos cargados</td>
-      </tr>
-    {{/if}}
-  </tbody>
-</table>
+<header class="page-header">
+  <div>
+    <span class="eyebrow">Egresos</span>
+    <h1>Gastos y servicios</h1>
+    <p>Facturas que pagás vos, para uno o varios locales.</p>
+  </div>
+  <a class="btn btn--primary" href="/taxes/new">+ Cargar gasto</a>
+</header>
+<nav class="tab-nav" aria-label="Filtrar gastos">
+  <a
+    href="/taxes"
+    class="tab-item {{#unless isHistory}}tab-item--active{{/unless}}"
+    >Por pagar</a
+  ><a
+    href="/taxes?view=history"
+    class="tab-item {{#if isHistory}}tab-item--active{{/if}}"
+    >Gastos pagados</a
+  >
+</nav>
+<label class="search-field" for="search"
+  >Buscar servicio o local<input
+    id="search"
+    type="search"
+    placeholder="Por ejemplo: agua…"
+    data-filter=".expense-item"
+/></label>
+<div class="payment-list">
+  {{#each taxes}}
+  <article class="card payment-item expense-item">
+    <div class="payment-identity">
+      <span class="eyebrow">{{period}}</span>
+      <h2>{{type}}</h2>
+      <p>{{> expenseLocals}}</p>
+      {{> status}}
+    </div>
+    <div class="payment-numbers">
+      <div>
+        <span>Total de la factura</span
+        ><strong>$ {{formatMoney amount}}</strong>
+      </div>
+      <div>
+        <span>Ya pagado</span><strong>$ {{formatMoney paidAmount}}</strong>
+      </div>
+      <div>
+        <span>Falta pagar</span><strong>$ {{formatMoney remaining}}</strong>
+      </div>
+    </div>
+    <div class="payment-action">
+      <small>Vence {{formatDate dueDate}}</small
+      ><a
+        class="btn {{#if (eq status 'paid')}}btn--secondary{{else}}btn--primary{{/if}}"
+        href="/taxes/detail/{{_id}}"
+        >{{#if (eq status 'paid')}}Ver detalle{{else}}Registrar pago →{{/if}}</a
+      >
+    </div>
+  </article>
+  {{else}}
+  <section class="card empty-state">
+    <span class="empty-icon">✓</span>
+    <h2>
+      {{#if isHistory}}Todavía no hay gastos pagados{{else}}Sin gastos
+      pendientes{{/if}}
+    </h2>
+    <p>
+      Cargá una factura para organizar sus vencimientos y registrar los pagos.
+    </p>
+    <a class="btn btn--primary" href="/taxes/new">Cargar un gasto</a>
+  </section>
+  {{/each}}
+  <p class="filter-empty" hidden>No hay resultados para esa búsqueda.</p>
+</div>

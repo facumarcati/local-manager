@@ -3,221 +3,201 @@ import { generatePayments } from "../utils/generatePayments.js";
 import Contract from "../models/contract.model.js";
 import Local from "../models/local.model.js";
 import Payment from "../models/payment.model.js";
-
+import { atomic } from "../utils/atomic.js";
+import {
+  validContract,
+  money,
+  dateOnly,
+  text,
+  state,
+} from "../utils/finance.js";
 const router = Router();
-
-router.get("/", async (req, res) => {
-  const contracts = await Contract.find({ status: "active" })
-    .populate("local")
-    .lean();
-
-  res.render("contracts", {
-    contracts,
-    view: "active",
-  });
-});
-
-router.get("/history", async (req, res) => {
+router.get(["/", "/history"], async (req, res) => {
+  const history = req.path === "/history";
   const contracts = await Contract.find({
-    status: { $in: ["finished", "cancelled"] },
+    status: history ? { $in: ["finished", "cancelled"] } : "active",
   })
     .populate("local")
+    .sort({ endDate: 1 })
     .lean();
-
-  res.render("contracts", {
-    contracts,
-    view: "history",
-  });
+  res.render("contracts", { contracts, view: history ? "history" : "active" });
 });
-
-router.get("/new", async (req, res) => {
-  const locals = await Local.find({ status: { $ne: "inactive" } }).lean();
-
-  res.render("newContract", { locals });
-});
-
+router.get("/new", async (req, res) =>
+  res.render("newContract", {
+    locals: await Local.find({ status: { $ne: "inactive" } }).lean(),
+  }),
+);
 router.post("/", async (req, res) => {
-  try {
-    const { local, tenantName, baseRent, paymentDay, startDate, endDate } =
-      req.body;
-
+  const data = validContract(req.body),
+    historical = req.body.historical === "on";
+  await atomic(async (session) => {
+    const local = await Local.findById(req.body.local).session(session);
+    if (!local) throw new Error("Elegí un local existente.");
+    const overlap = await Contract.exists({
+      local: local._id,
+      status: { $ne: "cancelled" },
+      startDate: { $lte: data.endDate },
+      endDate: { $gte: data.startDate },
+    }).session(session);
+    if (overlap)
+      throw new Error("El local ya tiene un contrato en esas fechas.");
     if (
-      !local ||
-      !tenantName ||
-      !baseRent ||
-      !paymentDay ||
-      !startDate ||
-      !endDate
-    ) {
-      return res.send("Faltan datos");
-    }
-
-    const existing = await Contract.findOne({
-      local,
-      status: "active",
-    });
-
-    if (existing) {
-      return res.send("El local ya tiene un contrato activo");
-    }
-
-    const contract = await Contract.create({
-      local,
-      tenantName,
-      baseRent,
-      paymentDay,
-      startDate,
-      endDate,
-    });
-
+      !historical &&
+      (await Contract.exists({ local: local._id, status: "active" }).session(
+        session,
+      ))
+    )
+      throw new Error(
+        "Finalizá el contrato activo de este local antes de crear otro.",
+      );
+    const [contract] = await Contract.create(
+      [
+        {
+          ...data,
+          local: local._id,
+          status: historical ? "finished" : "active",
+        },
+      ],
+      { session },
+    );
     const payments = generatePayments(contract);
-    await Payment.insertMany(payments);
-
-    await Local.findByIdAndUpdate(local, {
-      status: "rented",
-    });
-
-    res.redirect("/contracts");
-  } catch (error) {
-    console.log(error);
-    res.send("Error creando contrato");
-  }
+    if (payments.length) await Payment.insertMany(payments, { session });
+    if (!historical) {
+      local.status = "rented";
+      await local.save({ session });
+    }
+  });
+  res.redirect("/contracts" + (historical ? "/history" : "") + "?saved=1");
 });
-
 router.get("/edit/:id", async (req, res) => {
   const contract = await Contract.findById(req.params.id)
     .populate("local")
     .lean();
-
-  const locals = await Local.find().lean();
-
-  res.render("editContract", {
-    contract,
-    locals,
-  });
+  if (!contract) throw new Error("No se encontró el contrato.");
+  res.render("editContract", { contract });
 });
-
 router.post("/edit/:id", async (req, res) => {
-  try {
-    const { tenantName, endDate } = req.body;
-
-    await Contract.findByIdAndUpdate(req.params.id, {
-      tenantName,
-      endDate,
-    });
-
-    const contract = await Contract.findById(req.params.id);
-
-    const lastPayment = await Payment.findOne({
+  const tenantName = text(req.body.tenantName, "el nombre del inquilino"),
+    endDate = dateOnly(req.body.endDate);
+  await atomic(async (session) => {
+    const contract = await Contract.findById(req.params.id).session(session);
+    if (!contract) throw new Error("No se encontró el contrato.");
+    if (endDate < contract.startDate)
+      throw new Error("La fecha de fin debe ser posterior al inicio.");
+    if (endDate.getUTCFullYear() - contract.startDate.getUTCFullYear() > 50)
+      throw new Error("El contrato no puede superar 50 años.");
+    if (
+      await Contract.exists({
+        _id: { $ne: contract._id },
+        local: contract.local,
+        status: { $ne: "cancelled" },
+        startDate: { $lte: endDate },
+        endDate: { $gte: contract.startDate },
+      }).session(session)
+    )
+      throw new Error("Las fechas se superponen con otro contrato del local.");
+    if (
+      endDate < contract.endDate &&
+      (await Payment.exists({
+        contract: contract._id,
+        dueDate: { $gt: endDate },
+        paidAmount: { $gt: 0 },
+      }).session(session))
+    )
+      throw new Error(
+        "Hay cobros posteriores a esa fecha. Revisalos antes de acortar el contrato.",
+      );
+    await Payment.deleteMany({
       contract: contract._id,
-    }).sort({ dueDate: -1 });
-
-    if (lastPayment) {
-      const lastDate = new Date(lastPayment.dueDate);
-      const newEnd = new Date(endDate);
-
-      if (newEnd > lastDate) {
-        const partialContract = {
-          _id: contract._id,
-          local: contract.local,
-          baseRent: contract.baseRent,
-          paymentDay: contract.paymentDay,
-          startDate: lastDate,
-          endDate: newEnd,
-        };
-
-        const newPayments = generatePayments(partialContract);
-
-        if (newPayments.length > 0) {
-          await Payment.insertMany(newPayments);
-        }
-      }
-    }
-
-    res.redirect("/contracts");
-  } catch (error) {
-    console.log(error);
-    res.send("Error editando contrato");
-  }
-});
-
-router.post("/finish/:id", async (req, res) => {
-  try {
-    const contract = await Contract.findById(req.params.id);
-
-    await Contract.findByIdAndUpdate(req.params.id, {
-      status: "finished",
-    });
-
-    await Local.findByIdAndUpdate(contract.local, {
-      status: "available",
-    });
-
-    res.redirect("/contracts");
-  } catch (error) {
-    console.log(error);
-    res.send("Error finalizando contrato");
-  }
-});
-
-router.post("/adjust-contract/:id", async (req, res) => {
-  try {
-    const { newAmount, fromDate } = req.body;
-
-    const contractId = req.params.id;
-
-    await Contract.findByIdAndUpdate(contractId, {
-      baseRent: newAmount,
-    });
-
-    await Payment.updateMany(
-      {
-        contract: contractId,
-        dueDate: { $gte: new Date(fromDate) },
-        status: { $ne: "paid" },
-      },
-      {
-        amount: newAmount,
-      },
+      dueDate: { $gt: endDate },
+      paidAmount: 0,
+    }).session(session);
+    contract.tenantName = tenantName;
+    contract.endDate = endDate;
+    await contract.save({ session });
+    const existing = await Payment.find({ contract: contract._id })
+      .session(session)
+      .lean();
+    const periods = new Set(existing.map((p) => p.period));
+    const missing = generatePayments(contract).filter(
+      (p) => !periods.has(p.period),
     );
-
-    res.redirect("/contracts");
-  } catch (error) {
-    console.log(error);
-    res.send("Error ajustando contrato");
-  }
+    if (missing.length) await Payment.insertMany(missing, { session });
+  });
+  res.redirect("/contracts?saved=1");
 });
-
+router.post("/finish/:id", async (req, res) => {
+  await atomic(async (session) => {
+    const c = await Contract.findById(req.params.id).session(session);
+    if (!c || c.status !== "active")
+      throw new Error("No se encontró un contrato activo.");
+    c.status = "finished";
+    await c.save({ session });
+    await Local.findByIdAndUpdate(
+      c.local,
+      { status: "available" },
+      { session },
+    );
+  });
+  res.redirect("/contracts/history?saved=1");
+});
 router.get("/adjust/:id", async (req, res) => {
   const contract = await Contract.findById(req.params.id)
     .populate("local")
     .lean();
-
-  if (!contract) {
-    return res.send("Contrato no encontrado");
-  }
-
+  if (!contract) throw new Error("No se encontró el contrato.");
   res.render("adjustContract", { contract });
 });
-
-router.post("/regenerate/:id", async (req, res) => {
-  try {
-    const contract = await Contract.findById(req.params.id);
-
-    if (!contract) {
-      return res.send("Contrato no encontrado");
+router.post("/adjust-contract/:id", async (req, res) => {
+  const amount = money(req.body.newAmount),
+    fromDate = dateOnly(req.body.fromDate),
+    reason = text(req.body.reason, "el motivo del ajuste");
+  await atomic(async (session) => {
+    const c = await Contract.findById(req.params.id).session(session);
+    if (!c) throw new Error("No se encontró el contrato.");
+    if (fromDate < c.startDate || fromDate > c.endDate)
+      throw new Error("La fecha del ajuste debe estar dentro del contrato.");
+    const rows = await Payment.find({
+      contract: c._id,
+      dueDate: { $gte: fromDate },
+      status: { $ne: "paid" },
+    }).session(session);
+    if (!rows.length)
+      throw new Error("No hay cuotas pendientes desde esa fecha.");
+    if (rows.some((p) => p.paidAmount > amount))
+      throw new Error(
+        "El nuevo importe es menor a lo ya cobrado en alguna cuota.",
+      );
+    for (const p of rows) {
+      p.adjustments.push({
+        date: new Date(),
+        reason,
+        previousAmount: p.amount,
+        amount,
+        previousDueDate: p.dueDate,
+        dueDate: p.dueDate,
+      });
+      p.amount = amount;
+      p.status = state(p);
+      await p.save({ session });
     }
-
-    await Payment.deleteMany({ contract: contract._id });
-
-    const payments = generatePayments(contract);
-    await Payment.insertMany(payments);
-
-    res.redirect("/payments");
-  } catch (error) {
-    console.log(error);
-    res.send("Error regenerando pagos");
-  }
+    c.baseRent = amount;
+    await c.save({ session });
+  });
+  res.redirect("/contracts?saved=1");
 });
-
+// Completa cuotas faltantes; nunca elimina cuotas existentes ni movimientos.
+router.post("/regenerate/:id", async (req, res) => {
+  await atomic(async (session) => {
+    const c = await Contract.findById(req.params.id).session(session);
+    if (!c) throw new Error("No se encontró el contrato.");
+    const existing = await Payment.find({ contract: c._id })
+      .session(session)
+      .lean();
+    const periods = new Set(existing.map((p) => p.period));
+    const missing = generatePayments(c).filter((p) => !periods.has(p.period));
+    if (missing.length) await Payment.insertMany(missing, { session });
+  });
+  res.redirect("/payments?saved=1");
+});
 export default router;

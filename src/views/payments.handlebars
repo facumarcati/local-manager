@@ -1,129 +1,140 @@
-<div class="page-header">
+<header class="page-header">
   <div>
-    <h1 class="page-title">
-      {{#if (eq view "active")}}
-        Pagos a cobrar
-      {{else if (eq view "upcoming")}}
-        Pagos futuros
-      {{else if (eq view "history")}}
-        Historial de pagos
-      {{/if}}
-    </h1>
+    <span class="eyebrow">Ingresos</span>
+    <h1>Cobros de alquileres</h1>
+    <p>Registrá lo que recibís y consultá cuánto queda por cobrar.</p>
   </div>
-</div>
-
-<div class="tab-nav">
-  <a href="/payments" class="tab-item {{#if (eq view 'active')}}tab-item--active{{/if}}">
-    Activos
-  </a>
-  <a href="/payments/upcoming" class="tab-item {{#if (eq view 'upcoming')}}tab-item--active{{/if}}">
-    Próximos
-  </a>
-  <a href="/payments/history" class="tab-item {{#if (eq view 'history')}}tab-item--active{{/if}}">
-    Historial
-  </a>
-</div>
-
-<table border="1" cellpadding="5">
-  <thead>
-    <tr>
-      <th>Local</th>
-      <th>Inquilino</th>
-      <th>Período</th>
-
-      {{#if (eq view "history")}}
-        <th>Vencimiento</th>
-        <th>Monto pagado</th>
-        <th>Fecha</th>
-        <th>Detalle</th>
-      {{else}}
-        <th>Monto</th>
-        <th>Vencimiento</th>
-        <th>Estado</th>
-        <th>Pagado</th>
-        <th>Restante</th>
-        <th>Acciones</th>
-      {{/if}}
-    </tr>
-  </thead>
-
-  <tbody>
-    {{#if payments.length}}
-
-      {{#if (eq view "history")}}
-        {{#each payments}}
-          <tr>
-            <td>{{this.payment.local.name}}</td>
-            <td>{{this.payment.contract.tenantName}}</td>
-            <td>{{this.payment.period}}</td>
-            <td>
-              {{formatDate this.payment.dueDate}}
-            </td>
-            <td class="amount-ok">
-              ${{this.amount}}
-            </td>
-            <td>{{formatDate this.date}}</td>
-            <td>
-              <small>de ${{this.payment.amount}}</small>
-            </td>
-          </tr>
+  <a href="/contracts/new" class="btn btn--secondary">+ Cargar contrato</a>
+</header>
+<nav class="tab-nav" aria-label="Filtrar cobros">
+  <a
+    class="tab-item {{#if (eq view 'active')}}tab-item--active{{/if}}"
+    href="/payments"
+    >Por cobrar</a
+  ><a
+    class="tab-item {{#if (eq view 'upcoming')}}tab-item--active{{/if}}"
+    href="/payments/upcoming"
+    >Meses siguientes</a
+  ><a
+    class="tab-item {{#if isHistory}}tab-item--active{{/if}}"
+    href="/payments/history"
+    >Historial de cobros</a
+  >
+</nav>
+{{#if isHistory}}
+<section class="card">
+  <div class="table-wrap">
+    <table>
+      <caption class="sr-only">
+        Historial de cobros
+      </caption>
+      <thead>
+        <tr>
+          <th>Local / inquilino</th>
+          <th>Período</th>
+          <th>Fecha real</th>
+          <th>Importe</th>
+          <th>Medio</th>
+          <th>Estado</th>
+          <th>Detalle</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each transactions}}
+        <tr>
+          <td>
+            <strong>{{payment.local.name}}</strong
+            ><small>{{payment.contract.tenantName}}</small>
+          </td>
+          <td>{{periodName payment.period}}</td>
+          <td>{{formatDate date}}</td>
+          <td class="money">$ {{formatMoney amount}}</td>
+          <td>{{method}}</td>
+          <td>
+            {{#if reversedAt}}<span class="badge badge--gray">Anulado</span
+            >{{else}}<span class="badge badge--green">Recibido</span>{{/if}}
+          </td>
+          <td>
+            <a
+              class="btn btn--secondary"
+              href="/payments/detail/{{payment._id}}"
+              >Ver detalle</a
+            >
+          </td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <h3>Todavía no hay cobros registrados</h3>
+              <p>Los cobros aparecerán acá con su fecha real.</p>
+              <a href="/payments" class="btn btn--primary"
+                >Ir a cobros pendientes</a
+              >
+            </div>
+          </td>
+        </tr>
         {{/each}}
-      {{else}}
-        {{#each payments}}
-          <tr>
-            <td>{{this.local.name}}</td>
-            <td>{{this.contract.tenantName}}</td>
-            <td>{{this.period}}</td>
-            <td>${{this.amount}}</td>
-            <td>{{formatDate this.dueDate}}</td>
-            <td>
-              {{#if (eq this.status "paid")}}
-                <span class="badge badge--green">Pagado</span>
-              {{else if (eq this.status "partial")}}
-                <span class="badge badge--yellow">Parcial</span>
-              {{else if (isLate this.dueDate)}}
-                <span class="badge badge--red">Vencido</span>
-              {{else}}
-                <span class="badge badge--gray">Pendiente</span>
-              {{/if}}
-            </td>
-            <td>${{this.paidAmount}}</td>
-            <td>
-              ${{subtract this.amount this.paidAmount}}
-            </td>
-            <td>
-              {{#if (eq this.status "paid")}}
-                <span class="badge badge--green">Completo</span>
-              {{else}}
-                <form
-                  action="/payments/pay/{{this._id}}?view={{../view}}"
-                  method="POST"
-                  style="display:flex; gap:6px;"
-                >
-                  <input 
-                    type="number" 
-                    name="amount" 
-                    placeholder="Monto"
-                    min="1"
-                    max="{{subtract this.amount this.paidAmount}}"
-                    style="width:90px;"
-                    required
-                  />
-                  <button type="submit" class="btn btn--sm btn--primary">
-                    Pagar
-                  </button>
-                </form>
-              {{/if}}
-            </td>
-          </tr>
-        {{/each}}
-      {{/if}}
-    {{else}}
-      <tr>
-        <td colspan="10" style="text-align:center;">
-          No hay pagos cargados
-        </td>
-      </tr>
-    {{/if}}
-  </tbody>
-</table>
+      </tbody>
+    </table>
+  </div>
+</section>
+{{else}}<label class="search-field" for="search"
+  >Buscar local o inquilino<input
+    id="search"
+    type="search"
+    placeholder="Escribí un nombre…"
+    data-filter=".payment-item"
+/></label>
+<div class="payment-list">
+  {{#each payments}}
+  <article class="card payment-item">
+    <div class="payment-identity">
+      <span class="eyebrow">{{periodName period}}</span>
+      <h2>{{local.name}}</h2>
+      <p>
+        {{contract.tenantName}}{{#unless (eq contract.status 'active')}} ·
+        Contrato finalizado{{/unless}}
+      </p>
+      {{> status}}
+    </div>
+    <div class="payment-numbers">
+      <div>
+        <span>Total del alquiler</span><strong>$ {{formatMoney amount}}</strong>
+      </div>
+      <div>
+        <span>Ya cobrado</span><strong>$ {{formatMoney paidAmount}}</strong>
+      </div>
+      <div>
+        <span>Falta cobrar</span
+        ><strong class="{{#if overdue}}danger{{/if}}"
+          >$ {{formatMoney remaining}}</strong
+        >
+      </div>
+    </div>
+    <div class="payment-action">
+      <small>Vence {{formatDate dueDate}}</small
+      ><a class="btn btn--primary" href="/payments/detail/{{_id}}"
+        >Registrar cobro →</a
+      ><a href="/payments/detail/{{_id}}#corregir" class="text-link"
+        >Ver o corregir cuota</a
+      >
+    </div>
+  </article>
+  {{else}}
+  <section class="card empty-state">
+    <span class="empty-icon">✓</span>
+    <h2>
+      {{#if (eq view 'upcoming')}}Sin cuotas futuras{{else}}Sin cobros
+      pendientes{{/if}}
+    </h2>
+    <p>
+      Al cargar un contrato se crean sus cuotas automáticamente, incluso para
+      fechas anteriores.
+    </p>
+    <a class="btn btn--primary" href="/contracts/new">Cargar un contrato</a>
+  </section>
+  {{/each}}
+  <p class="filter-empty" hidden>No hay resultados para esa búsqueda.</p>
+</div>
+{{/if}}

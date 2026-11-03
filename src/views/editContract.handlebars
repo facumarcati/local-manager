@@ -1,50 +1,41 @@
-<h1>Editar contrato</h1>
-
-<form action="/contracts/edit/{{contract._id}}" method="POST">
+<a href="/contracts" class="back-link">← Volver a contratos</a>
+<header class="page-header">
   <div>
-    <label>Local</label>
-    <input type="text" value="{{contract.local.name}}" disabled />
+    <span class="eyebrow">{{contract.local.name}}</span>
+    <h1>Editar contrato</h1>
+    <p>Al extenderlo se agregan solo las cuotas faltantes.</p>
   </div>
-  <div>
-    <label>Inquilino</label>
-    <input
-      type="text"
+</header>
+<form
+  class="form-card narrow"
+  method="post"
+  action="/contracts/edit/{{contract._id}}"
+>
+  <div class="field">
+    <label for="tenant">Inquilino</label
+    ><input
+      id="tenant"
       name="tenantName"
       value="{{contract.tenantName}}"
       required
     />
   </div>
-  <div>
-    <label>Monto</label>
-    <input
-      type="number"
-      name="baseRent"
-      value="{{contract.baseRent}}"
-      disabled
-    />
-  </div>
-  <div>
-    <label>Día de pago</label>
-    <input type="number" value="{{contract.paymentDay}}" disabled />
-  </div>
-  <div>
-    <label>Inicio</label>
-    <input
-      type="date"
-      value="{{formatDateInput contract.startDate}}"
-      disabled
-    />
-  </div>
-  <div>
-    <label>Fin</label>
-    <input
-      type="date"
+  <div class="field">
+    <label for="end">Fin del contrato</label
+    ><input
+      id="end"
       name="endDate"
+      type="date"
       value="{{formatDateInput contract.endDate}}"
       required
     />
   </div>
-  <button>
-    Guardar cambios
-  </button>
+  <div class="notice">
+    Si acortás el contrato se retiran las cuotas posteriores sin cobros. Si hay
+    cuotas ya cobradas, primero deberás revisarlas.
+  </div>
+  <div class="form-actions">
+    <a href="/contracts" class="btn btn--secondary">Cancelar</a
+    ><button class="btn btn--primary" type="submit">Guardar cambios</button>
+  </div>
 </form>

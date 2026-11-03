@@ -1,59 +1,50 @@
-<div class="page-header">
+<header class="page-header">
   <div>
-    <h1 class="page-title">Locales</h1>
-    <p class="page-subtitle">Administrá tus propiedades</p>
+    <span class="eyebrow">Propiedades</span>
+    <h1>Mis locales</h1>
+    <p>Los datos de tus locales y quién los alquila.</p>
   </div>
-  <a href="/locals/new" class="btn btn--primary">+ Nuevo local</a>
+  <a href="/locals/new" class="btn btn--primary">+ Agregar local</a>
+</header>
+<div class="local-grid">
+  {{#each locals}}
+  <article class="card local-card">
+    <span class="local-symbol">▦</span>
+    <h2>{{name}}</h2>
+    <p>{{address}}</p>
+    <div class="local-tenant">
+      {{#if tenantName}}<span class="badge badge--green">Alquilado</span>
+      <p>{{tenantName}}</p>
+      {{else}}<span class="badge badge--gray">Sin contrato activo</span>{{/if}}
+    </div>
+    <div class="form-actions">
+      <a class="btn btn--secondary" href="/locals/edit/{{_id}}">Editar datos</a
+      >{{#unless tenantName}}<a class="btn btn--primary" href="/contracts/new"
+        >Cargar contrato</a
+      >{{/unless}}
+    </div>
+    <details>
+      <summary>Más opciones</summary>
+      <form
+        action="/locals/delete/{{_id}}"
+        method="post"
+        data-confirm="Se eliminará este local si todavía no tiene historial asociado."
+      >
+        <button class="btn btn--danger" type="submit">
+          Eliminar local sin historial
+        </button>
+      </form>
+    </details>
+  </article>
+  {{else}}
+  <section class="card empty-state full-width">
+    <span class="empty-icon">▦</span>
+    <h2>Agregá tu primer local</h2>
+    <p>
+      Empezá por el nombre y la dirección. Después podés cargar contratos
+      actuales o anteriores.
+    </p>
+    <a class="btn btn--primary" href="/locals/new">+ Agregar local</a>
+  </section>
+  {{/each}}
 </div>
-
-<table border="1" cellpadding="5">
-  <thead>
-    <tr>
-      <th>Nombre</th>
-      <th>Dirección</th>
-      <th>Estado</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#if locals.length}}
-      {{#each locals}}
-        <tr>
-          <td><strong>{{this.name}}</strong></td>
-          <td>{{this.address}}</td>
-          <td>
-            {{#if (eq this.status "available")}}
-              <span class="badge badge--green">Disponible</span>
-            {{else if (eq this.status "rented")}}
-              <span class="badge badge--blue">Alquilado</span>
-            {{else}}
-              <span class="badge badge--gray">{{this.status}}</span>
-            {{/if}}
-          </td>
-          <td class="actions-cell">
-            <a
-              href="/locals/edit/{{this._id}}"
-              class="btn btn--sm btn--edit"
-            >Editar</a>
-            <form
-              action="/locals/delete/{{this._id}}"
-              method="POST"
-              style="display:inline;"
-            >
-              <button
-                type="submit"
-                class="btn btn--sm btn--danger"
-              >Eliminar</button>
-            </form>
-          </td>
-        </tr>
-      {{/each}}
-    {{else}}
-      <tr>
-        <td colspan="4" style="text-align:center; color: var(--text-muted);">
-          No hay locales cargados
-        </td>
-      </tr>
-    {{/if}}
-  </tbody>
-</table>

@@ -1,0 +1,157 @@
+<a class="back-link" href="/payments">← Volver a cobros</a>
+<header class="page-header">
+  <div>
+    <span class="eyebrow">Detalle del alquiler</span>
+    <h1>{{payment.local.name}}</h1>
+    <p>{{payment.contract.tenantName}} · {{periodName payment.period}}</p>
+  </div>
+  {{> status payment}}
+</header>
+<div class="stats-grid compact">
+  <div class="stat-card">
+    <span class="stat-label">Importe total</span
+    ><strong class="stat-value">$ {{formatMoney payment.amount}}</strong>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Ya cobrado</span
+    ><strong class="stat-value positive"
+      >$ {{formatMoney payment.paidAmount}}</strong
+    >
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Saldo pendiente</span
+    ><strong class="stat-value">$ {{formatMoney payment.remaining}}</strong
+    ><span class="stat-help">Vence {{formatDate payment.dueDate}}</span>
+  </div>
+</div>
+{{#if payment.notes}}
+<div class="notice">{{payment.notes}}</div>
+{{/if}}{{#if (gt payment.remaining 0)}}
+<h2 class="section-title">Registrar un cobro</h2>
+{{> collectionForm action=(concat "/payments/pay/" payment._id)
+remaining=payment.remaining today=today operationId=operationId button="Guardar
+cobro recibido"}}{{else}}
+<div class="notice success">✓ Esta cuota está completamente cobrada.</div>
+{{/if}}
+<section class="card section-space">
+  <div class="card-header">
+    <div>
+      <h2>Historial de movimientos</h2>
+      <p>Las anulaciones conservan el movimiento original.</p>
+    </div>
+  </div>
+  <div class="card-body">
+    {{#each transactions}}
+    <article class="movement">
+      <div class="list-row">
+        <span
+          ><strong>$ {{formatMoney amount}}</strong
+          ><small>{{formatDate date}} · {{method}}</small></span
+        >{{#if reversedAt}}<span class="badge badge--gray">Anulado</span
+        >{{else}}<span class="badge badge--green">Recibido</span>{{/if}}
+      </div>
+      {{#if notes}}
+      <p>{{notes}}</p>
+      {{/if}}{{#if reversedAt}}
+      <p class="field-help">
+        Anulado el {{formatDate reversedAt}}: {{reversalReason}}
+      </p>
+      {{else}}
+      <details>
+        <summary>Anular este cobro</summary>
+        <form
+          method="post"
+          action="/payments/reverse/{{_id}}"
+          data-confirm="Se anulará este movimiento y el saldo volverá a quedar pendiente. El historial se conserva."
+        >
+          <label for="reason-{{_id}}">Motivo de la anulación</label
+          ><input
+            id="reason-{{_id}}"
+            name="reason"
+            required
+            placeholder="Ej.: se registró dos veces"
+          /><button class="btn btn--danger" type="submit">
+            Anular movimiento
+          </button>
+        </form>
+      </details>
+      {{/if}}
+    </article>
+    {{else}}
+    <div class="empty-state">
+      <h3>Sin movimientos registrados</h3>
+      <p>Podés cargar movimientos anteriores usando su fecha real.</p>
+    </div>
+    {{/each}}
+  </div>
+</section>
+<details class="card correction section-space" id="corregir">
+  <summary>Corregir importe, vencimiento o notas</summary>
+  <form
+    method="post"
+    action="/payments/edit/{{payment._id}}"
+    class="form-card"
+    data-confirm="Se actualizará esta cuota y quedará guardado el motivo del cambio."
+  >
+    <div class="form-grid">
+      <div>
+        <label for="edit-amount">Importe total corregido</label
+        ><input
+          id="edit-amount"
+          name="amount"
+          type="number"
+          step="0.01"
+          min="0.01"
+          value="{{payment.amount}}"
+          required
+        />
+      </div>
+      <div>
+        <label for="edit-due">Vencimiento</label
+        ><input
+          id="edit-due"
+          name="dueDate"
+          type="date"
+          value="{{formatDateInput payment.dueDate}}"
+          required
+        />
+      </div>
+      <div class="full-width">
+        <label for="edit-notes">Notas</label
+        ><textarea id="edit-notes" name="notes">{{payment.notes}}</textarea>
+      </div>
+      <div class="full-width">
+        <label for="edit-reason">Motivo del cambio</label
+        ><input
+          id="edit-reason"
+          name="reason"
+          required
+          placeholder="Ej.: corrección de factura, descuento o recargo acordado"
+        />
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Guardar corrección</button>
+    </div>
+  </form>
+</details>
+{{#if payment.adjustments.length}}
+<section class="card section-space">
+  <div class="card-header"><h2>Correcciones realizadas</h2></div>
+  <div class="card-body">
+    {{#each payment.adjustments}}
+    <div class="audit-row">
+      <strong>{{reason}}</strong>
+      <p>
+        {{formatDate date}} · Importe: $ {{formatMoney previousAmount}} → $
+        {{formatMoney amount}}
+      </p>
+      <small
+        >Vencimiento: {{formatDate previousDueDate}} → {{formatDate
+        dueDate}}</small
+      >
+    </div>
+    {{/each}}
+  </div>
+</section>
+{{/if}}

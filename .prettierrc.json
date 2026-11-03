@@ -1,0 +1,16 @@
+{
+  "overrides": [
+    {
+      "files": "*.handlebars",
+      "options": {
+        "parser": "html"
+      }
+    },
+    {
+      "files": "*.svg",
+      "options": {
+        "parser": "html"
+      }
+    }
+  ]
+}

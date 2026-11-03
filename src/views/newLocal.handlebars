@@ -1,9 +1,34 @@
-<h1>Nuevo local</h1>
-
-<form method="POST" action="/locals">
-  <label>Nombre</label>
-  <input type="text" name="name" />
-  <label>Dirección</label>
-  <input type="text" name="address" />
-  <button type="submit">Guardar</button>
+<a class="back-link" href="/locals">← Volver a locales</a>
+<header class="page-header">
+  <div>
+    <span class="eyebrow">Propiedades</span>
+    <h1>Agregar un local</h1>
+    <p>Usá un nombre fácil de reconocer, como “Local de la esquina”.</p>
+  </div>
+</header>
+<form action="/locals" method="post" class="form-card narrow">
+  <div class="field">
+    <label for="name">Nombre del local</label
+    ><input
+      id="name"
+      name="name"
+      value=""
+      required
+      placeholder="Ej.: Local 1"
+    />
+  </div>
+  <div class="field">
+    <label for="address">Dirección</label
+    ><input
+      id="address"
+      name="address"
+      value=""
+      required
+      placeholder="Calle y número"
+    />
+  </div>
+  <div class="form-actions">
+    <a href="/locals" class="btn btn--secondary">Cancelar</a
+    ><button class="btn btn--primary" type="submit">Guardar local</button>
+  </div>
 </form>

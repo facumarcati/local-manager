@@ -1,0 +1,156 @@
+<a class="back-link" href="/taxes">← Volver a gastos</a>
+<header class="page-header">
+  <div>
+    <span class="eyebrow">Detalle del gasto</span>
+    <h1>{{tax.type}}</h1>
+    <p>{{> expenseLocals tax}} · {{tax.period}}</p>
+  </div>
+  {{> status tax}}
+</header>
+<div class="stats-grid compact">
+  <div class="stat-card">
+    <span class="stat-label">Importe total</span
+    ><strong class="stat-value">$ {{formatMoney tax.amount}}</strong>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Ya pagado</span
+    ><strong class="stat-value positive"
+      >$ {{formatMoney tax.paidAmount}}</strong
+    >
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Saldo pendiente</span
+    ><strong class="stat-value">$ {{formatMoney tax.remaining}}</strong
+    ><span class="stat-help">Vence {{formatDate tax.dueDate}}</span>
+  </div>
+</div>
+{{#if tax.notes}}
+<div class="notice">{{tax.notes}}</div>
+{{/if}}{{#if (gt tax.remaining 0)}}
+<h2 class="section-title">Registrar un pago</h2>
+{{> collectionForm action=(concat "/taxes/pay/" tax._id) remaining=tax.remaining
+today=today operationId=operationId button="Guardar pago realizado"}}{{else}}
+<div class="notice success">✓ Este gasto está completamente pagado.</div>
+{{/if}}
+<section class="card section-space">
+  <div class="card-header">
+    <div>
+      <h2>Historial de movimientos</h2>
+      <p>Las anulaciones conservan el movimiento original.</p>
+    </div>
+  </div>
+  <div class="card-body">
+    {{#each tax.movements}}
+    <article class="movement">
+      <div class="list-row">
+        <span
+          ><strong>$ {{formatMoney amount}}</strong
+          ><small>{{formatDate date}} · {{method}}</small></span
+        >{{#if reversedAt}}<span class="badge badge--gray">Anulado</span
+        >{{else}}<span class="badge badge--green">Pagado</span>{{/if}}
+      </div>
+      {{#if notes}}
+      <p>{{notes}}</p>
+      {{/if}}{{#if reversedAt}}
+      <p class="field-help">
+        Anulado el {{formatDate reversedAt}}: {{reversalReason}}
+      </p>
+      {{else}}
+      <details>
+        <summary>Anular este pago</summary>
+        <form
+          method="post"
+          action="/taxes/reverse/{{../tax._id}}/{{_id}}"
+          data-confirm="Se anulará este movimiento y el saldo volverá a quedar pendiente. El historial se conserva."
+        >
+          <label for="reason-{{_id}}">Motivo de la anulación</label
+          ><input
+            id="reason-{{_id}}"
+            name="reason"
+            required
+            placeholder="Ej.: se registró dos veces"
+          /><button class="btn btn--danger" type="submit">
+            Anular movimiento
+          </button>
+        </form>
+      </details>
+      {{/if}}
+    </article>
+    {{else}}
+    <div class="empty-state">
+      <h3>Sin movimientos registrados</h3>
+      <p>Podés cargar movimientos anteriores usando su fecha real.</p>
+    </div>
+    {{/each}}
+  </div>
+</section>
+<details class="card correction section-space" id="corregir">
+  <summary>Corregir importe, vencimiento o notas</summary>
+  <form
+    method="post"
+    action="/taxes/edit/{{tax._id}}"
+    class="form-card"
+    data-confirm="Se actualizará esta gasto y quedará guardado el motivo del cambio."
+  >
+    <div class="form-grid">
+      <div>
+        <label for="edit-amount">Importe total corregido</label
+        ><input
+          id="edit-amount"
+          name="amount"
+          type="number"
+          step="0.01"
+          min="0.01"
+          value="{{tax.amount}}"
+          required
+        />
+      </div>
+      <div>
+        <label for="edit-due">Vencimiento</label
+        ><input
+          id="edit-due"
+          name="dueDate"
+          type="date"
+          value="{{formatDateInput tax.dueDate}}"
+          required
+        />
+      </div>
+      <div class="full-width">
+        <label for="edit-notes">Notas</label
+        ><textarea id="edit-notes" name="notes">{{tax.notes}}</textarea>
+      </div>
+      <div class="full-width">
+        <label for="edit-reason">Motivo del cambio</label
+        ><input
+          id="edit-reason"
+          name="reason"
+          required
+          placeholder="Ej.: corrección de factura, descuento o recargo acordado"
+        />
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Guardar corrección</button>
+    </div>
+  </form>
+</details>
+{{#if tax.adjustments.length}}
+<section class="card section-space">
+  <div class="card-header"><h2>Correcciones realizadas</h2></div>
+  <div class="card-body">
+    {{#each tax.adjustments}}
+    <div class="audit-row">
+      <strong>{{reason}}</strong>
+      <p>
+        {{formatDate date}} · Importe: $ {{formatMoney previousAmount}} → $
+        {{formatMoney amount}}
+      </p>
+      <small
+        >Vencimiento: {{formatDate previousDueDate}} → {{formatDate
+        dueDate}}</small
+      >
+    </div>
+    {{/each}}
+  </div>
+</section>
+{{/if}}

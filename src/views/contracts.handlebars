@@ -1,97 +1,81 @@
-<div class="page-header">
+<header class="page-header">
   <div>
-    <h1 class="page-title">
-      {{#if (eq view "active")}}Contratos activos{{else}}Historial de contratos{{/if}}
+    <span class="eyebrow">Alquileres</span>
+    <h1>
+      Contratos {{#if (eq view 'history')}}anteriores{{else}}activos{{/if}}
     </h1>
-    <p class="page-subtitle">Gestión de contratos de alquiler</p>
+    <p>Fechas, alquileres y cuotas de cada inquilino.</p>
   </div>
-  <a href="/contracts/new" class="btn btn--primary">+ Nuevo contrato</a>
+  <a class="btn btn--primary" href="/contracts/new">+ Cargar contrato</a>
+</header>
+<nav class="tab-nav" aria-label="Filtrar contratos">
+  <a
+    class="tab-item {{#if (eq view 'active')}}tab-item--active{{/if}}"
+    href="/contracts"
+    >Activos</a
+  ><a
+    class="tab-item {{#if (eq view 'history')}}tab-item--active{{/if}}"
+    href="/contracts/history"
+    >Anteriores</a
+  >
+</nav>
+<div class="payment-list">
+  {{#each contracts}}
+  <article class="card contract-card">
+    <div>
+      <span class="eyebrow">{{local.name}}</span>
+      <h2>{{tenantName}}</h2>
+      <p>{{formatDate startDate}} al {{formatDate endDate}}</p>
+    </div>
+    <div>
+      <span class="stat-label">Alquiler de referencia</span
+      ><strong class="contract-amount">$ {{formatMoney baseRent}}</strong
+      ><small>Vencimiento: día {{paymentDay}} de cada mes</small>
+    </div>
+    <div class="form-actions">
+      <a class="btn btn--secondary" href="/contracts/edit/{{_id}}"
+        >Editar fechas</a
+      ><a class="btn btn--secondary" href="/contracts/adjust/{{_id}}"
+        >Ajustar alquiler</a
+      >
+    </div>
+    <details class="full-width">
+      <summary>Otras acciones</summary>
+      <div class="form-actions">
+        <form
+          action="/contracts/regenerate/{{_id}}"
+          method="post"
+          data-confirm="Se completarán únicamente las cuotas faltantes. Se conservarán todos los cobros y cuotas existentes."
+        >
+          <button class="btn btn--secondary" type="submit">
+            Completar cuotas faltantes
+          </button>
+        </form>
+        {{#if (eq status 'active')}}
+        <form
+          action="/contracts/finish/{{_id}}"
+          method="post"
+          data-confirm="El contrato pasará al historial y el local quedará disponible. Las cuotas y deudas seguirán registradas; corregí la fecha de fin antes si el contrato terminó anticipadamente."
+        >
+          <button class="btn btn--danger" type="submit">
+            Finalizar contrato
+          </button>
+        </form>
+        {{/if}}
+      </div>
+    </details>
+  </article>
+  {{else}}
+  <section class="card empty-state">
+    <h2>
+      No hay contratos {{#if (eq view
+      'history')}}anteriores{{else}}activos{{/if}}
+    </h2>
+    <p>
+      Podés registrar un contrato actual o uno que ya terminó para reconstruir
+      el historial.
+    </p>
+    <a class="btn btn--primary" href="/contracts/new">Cargar contrato</a>
+  </section>
+  {{/each}}
 </div>
-
-<div class="tab-nav">
-  <a href="/contracts" class="tab-item {{#if (eq view 'active')}}tab-item--active{{/if}}">
-    Activos
-  </a>
-  <a href="/contracts/history" class="tab-item {{#if (eq view 'history')}}tab-item--active{{/if}}">
-    Historial
-  </a>
-</div>
-
-<table border="1" cellpadding="5">
-  <thead>
-    <tr>
-      <th>Local</th>
-      <th>Inquilino</th>
-      <th>Monto</th>
-      <th>Día de pago</th>
-      <th>Inicio</th>
-      <th>Fin</th>
-      <th>Estado</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {{#if contracts.length}}
-      {{#each contracts}}
-        <tr>
-          <td>{{this.local.name}}</td>
-          <td>{{this.tenantName}}</td>
-          <td>${{this.baseRent}}</td>
-          <td>{{this.paymentDay}}</td>
-          <td>{{formatDate this.startDate}}</td>
-          <td>{{formatDate this.endDate}}</td>
-          <td>
-            {{#if (eq this.status "active")}}
-              <span class="badge badge--green">Activo</span>
-            {{else}}
-              <span class="badge badge--gray">Finalizado</span>
-            {{/if}}
-          </td>
-          <td class="actions-cell">
-            <a href="/contracts/edit/{{this._id}}" class="btn btn--sm btn--edit">
-              Editar
-            </a>
-            <a href="/contracts/adjust/{{this._id}}" class="btn btn--sm btn--adjust">
-              Ajustar monto
-            </a>
-            <form 
-              id="adjust-{{this._id}}" 
-              action="/contracts/adjust-contract/{{this._id}}" 
-              method="POST"
-              style="display:none; margin-top:5px;"
-            >
-              <input 
-                type="number" 
-                name="newAmount" 
-                placeholder="Nuevo monto" 
-                required 
-              />
-              <input 
-                type="date" 
-                name="fromDate" 
-                required 
-              />
-              <button type="submit">Aplicar</button>
-            </form>
-            <form
-              action="/contracts/regenerate/{{this._id}}"
-              method="POST"
-              style="display:inline;"
-            >
-              <button class="btn btn--sm btn--danger">
-                Regenerar pagos
-              </button>
-            </form>
-          </td>
-        </tr>
-      {{/each}}
-    {{else}}
-      <tr>
-        <td colspan="8">
-          No hay contratos cargados
-        </td>
-      </tr>
-    {{/if}}
-  </tbody>
-</table>
