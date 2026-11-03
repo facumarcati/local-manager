@@ -6,9 +6,20 @@
     <p>Una sola factura, aunque corresponda a varios locales.</p>
   </div>
 </header>
-{{#if locals.length }}
 <form method="post" action="/taxes" class="form-card">
-  <fieldset>
+  <label class="checkbox-card personal-expense"
+    ><input
+      type="checkbox"
+      name="isPersonal"
+      value="1"
+      data-personal-expense
+    /><span
+      >Gasto personal<small
+        >Servicio o impuesto propio, sin asociarlo a un local.</small
+      ></span
+    ></label
+  >
+  <fieldset data-expense-locals>
     <legend>¿A qué locales corresponde?</legend>
     <p class="field-help">
       El importe se registra una sola vez. No se cobra a los inquilinos.
@@ -23,6 +34,12 @@
         ></label
       >{{/each}}
     </div>
+    {{#unless locals.length}}
+    <p class="field-help">
+      No hay locales cargados. Marcá “Gasto personal” o agregá un local antes de
+      guardar.
+    </p>
+    {{/unless}}
   </fieldset>
   <div class="form-grid">
     <div>
@@ -83,10 +100,3 @@
     ><button class="btn btn--primary" type="submit">Guardar gasto</button>
   </div>
 </form>
-{{else}}
-<section class="card empty-state">
-  <h2>Primero agregá un local</h2>
-  <p>Así podés indicar a qué propiedad corresponde cada factura.</p>
-  <a class="btn btn--primary" href="/locals/new">Agregar local</a>
-</section>
-{{/if}}

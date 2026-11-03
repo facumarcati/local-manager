@@ -1,2 +1,5 @@
-{{#if locals.length}}{{#each locals}}<span class="local-tag">{{name}}</span
->{{/each}}{{else}}{{local.name}}{{/if}}
+{{#if isPersonal}}<span class="local-tag">Personal</span>{{else if
+locals.length}}{{#each locals}}<span class="local-tag">{{name}}</span
+>{{/each}}{{else if local}}{{local.name}}{{else}}<span class="local-tag"
+  >Personal</span
+>{{/if}}

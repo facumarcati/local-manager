@@ -139,3 +139,23 @@ document.addEventListener("change", (event) => {
     } catch {}
   }
 });
+
+function syncPersonalExpense() {
+  const input = document.querySelector("[data-personal-expense]"),
+    locals = document.querySelector("[data-expense-locals]");
+  if (!input || !locals) return;
+  locals.disabled = input.checked;
+  if (input.checked) {
+    locals.querySelectorAll('input[name="locals"]').forEach((box) => {
+      box.checked = false;
+    });
+    const all = locals.querySelector("[data-select-all]");
+    if (all) all.textContent = "Seleccionar todos";
+  }
+}
+document.addEventListener("change", (event) => {
+  if (event.target.matches("[data-personal-expense]")) syncPersonalExpense();
+});
+document.addEventListener("app:view-loaded", syncPersonalExpense);
+window.addEventListener("pageshow", syncPersonalExpense);
+syncPersonalExpense();

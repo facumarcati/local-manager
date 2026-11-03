@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const taxSchema = new mongoose.Schema({
+  isPersonal: { type: Boolean, default: false },
   local: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Local",

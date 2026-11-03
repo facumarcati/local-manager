@@ -318,6 +318,25 @@ try {
   assert.ok(results.every((r) => r.status === 302));
   assert.equal((await Payment.findById(q.id)).paidAmount, 140);
   checks++;
+  await post("/taxes", {
+    isPersonal: "1",
+    locals: [a.id],
+    type: "Gas",
+    amount: "50",
+    period: "Personal anterior",
+    dueDate: "2024-01-31",
+  });
+  const personal = await Tax.findOne({ isPersonal: true });
+  assert.equal(personal.locals.length, 0);
+  assert.ok(!personal.local);
+  checks++;
+  assert.ok((await get("/taxes/detail/" + personal.id)).includes("Personal"));
+  checks++;
+  await post(
+    "/taxes",
+    { type: "Agua", amount: "10", period: "Sin local", dueDate: "2024-01-31" },
+    400,
+  );
   const partial = await fetch(origin + "/?year=2024&month=1", {
     headers: { "X-Requested-With": "month-navigation" },
   });

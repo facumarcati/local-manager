@@ -36,11 +36,18 @@ router.post("/", async (req, res) => {
   const amount = money(req.body.amount),
     dueDate = dateOnly(req.body.dueDate),
     period = text(req.body.period, "el período");
-  const ids = [...new Set([req.body.locals || []].flat())];
-  if (!ids.length) throw new Error("Elegí al menos un local para este gasto.");
-  if ((await Local.countDocuments({ _id: { $in: ids } })) !== ids.length)
+  const isPersonal =
+    req.body.isPersonal === "1" || req.body.isPersonal === "on";
+  const ids = isPersonal ? [] : [...new Set([req.body.locals || []].flat())];
+  if (!isPersonal && !ids.length)
+    throw new Error("Elegí al menos un local para este gasto.");
+  if (
+    ids.length &&
+    (await Local.countDocuments({ _id: { $in: ids } })) !== ids.length
+  )
     throw new Error("Alguno de los locales ya no existe.");
   await Tax.create({
+    isPersonal,
     locals: ids,
     local: ids[0],
     type: req.body.type,
